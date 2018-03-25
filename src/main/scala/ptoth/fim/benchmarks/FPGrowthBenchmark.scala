@@ -17,22 +17,16 @@
 package ptoth.fim.benchmarks
 
 import ptoth.fim.fpgrowth.FPGrowth
-import ptoth.fim.{ FrequentItemSet, FrequentItemSetAccumulator }
+import ptoth.fim.{ CountingAccumulator, FrequentItemSet, FrequentItemSetAccumulator }
 
 object FPGrowthBenchmark {
 
   def measureFPGrowth(itemsets: Array[Array[Int]], minFrequency: Int): FrequentItemSetAccumulator[Int] = {
-    val dummyAccumulator: FrequentItemSetAccumulator[Int] = new FrequentItemSetAccumulator[Int] {
+    val accumulator = CountingAccumulator[Int]()
 
-      override def add(frequentItemSet: FrequentItemSet[Int]): this.type = this
+    FPGrowth(itemsets, minFrequency, accumulator = accumulator)
 
-      override def size: Int = 0
-
-    }
-
-    FPGrowth(itemsets, minFrequency, accumulator = dummyAccumulator)
-
-    dummyAccumulator
+    accumulator
   }
 
 }

@@ -24,10 +24,19 @@ case class FrequentItemSet[ItemType](items: Array[ItemType], frequency: Int) {
 
   def size: Int = items.size
 
-  def add(item: ItemType, frequency: Int)(implicit ev: ClassTag[ItemType]): FrequentItemSet[ItemType] = {
+  def addItem(item: ItemType, frequency: Int)(implicit ev: ClassTag[ItemType]): FrequentItemSet[ItemType] = {
     val items = new Array[ItemType](this.items.size + 1)
-    this.items.copyToArray(items, 1)
     items(0) = item
+    this.items.copyToArray(items, 1)
+
+    FrequentItemSet(items, frequency)
+  }
+
+  def addItems(newItems: Array[ItemType],
+               frequency: Int)(implicit ev: ClassTag[ItemType]): FrequentItemSet[ItemType] = {
+    val items = new Array[ItemType](this.items.size + newItems.size)
+    newItems.copyToArray(items, 0, newItems.size)
+    this.items.copyToArray(items, newItems.size, this.items.size)
 
     FrequentItemSet(items, frequency)
   }
