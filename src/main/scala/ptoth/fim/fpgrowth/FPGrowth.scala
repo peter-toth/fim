@@ -22,11 +22,14 @@ import ptoth.fim.common._
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class FPHeader[ItemType](val item: ItemType, val frequency: Int) extends Header
+class FPNode(override val itemId: Int, override val parent: FPNode) extends Node[FPNode](itemId, parent)
+
+class FPHeader[ItemType](val item: ItemType, val frequency: Int) extends Header[FPNode]
 
 class FPTreeBuilder[ItemType](itemEncoder: ItemEncoder[ItemType])
-    extends TreeBuilder[ItemType, FPHeader[ItemType]](itemEncoder,
-                                                      (_, item, frequency) => new FPHeader(item, frequency))
+    extends TreeBuilder[ItemType, FPNode, FPHeader[ItemType]](itemEncoder,
+                                                              (_, item, frequency) => new FPHeader(item, frequency),
+                                                              (itemId, parent) => new FPNode(itemId, parent))
 
 object FPGrowth {
 
@@ -52,20 +55,20 @@ object FPGrowth {
 
     // TODO: destroy fpTreeBuilder to free up some memory
 
-    mine(fPTree,
-         minFrequency,
-         minItemSetSize,
-         maxItemSetSize,
-         maxNItemSets,
-         enableParallel,
-         baseItemSet.getOrElse(FrequentItemSet.empty),
-         accumulator)
+    mine[ItemType](fPTree,
+                   minFrequency,
+                   minItemSetSize,
+                   maxItemSetSize,
+                   maxNItemSets,
+                   enableParallel,
+                   baseItemSet.getOrElse(FrequentItemSet.empty[ItemType]),
+                   accumulator)
 
     accumulator
   }
 
   def mine[ItemType: ClassTag](
-      fpTree: Tree[FPHeader[ItemType]],
+      fpTree: Tree[FPNode, FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int = 1,
       maxItemSetSize: Int = 0,
@@ -87,7 +90,7 @@ object FPGrowth {
   }
 
   private def mine[ItemType: ClassTag](
-      fpTree: Tree[FPHeader[ItemType]],
+      fpTree: Tree[FPNode, FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int,
       maxItemSetSize: Int,
@@ -141,9 +144,10 @@ object FPGrowth {
           val oldItemIdEncoder = ContinuousArrayEncoder(oldItemIdAndFrequencies, minFrequency)
 
           val conditionalFPTreeBuilder =
-            new TreeBuilder[Int, FPHeader[ItemType]](
+            new TreeBuilder[Int, FPNode, FPHeader[ItemType]](
               oldItemIdEncoder,
-              (_, oldItemId, frequency) => new FPHeader(fpTree.headers(oldItemId).item, frequency)
+              (_, oldItemId, frequency) => new FPHeader(fpTree.headers(oldItemId).item, frequency),
+              (itemId, parent) => new FPNode(itemId, parent)
             )
           Iterator
             .iterate(fpTree.headers(itemId).node)(_.sibling)
@@ -174,7 +178,7 @@ object FPGrowth {
   }
 
   private def mineSinglePath[ItemType: ClassTag](
-      node: Node,
+      node: FPNode,
       height: Int,
       headers: Array[FPHeader[ItemType]],
       frequency: Int,
