@@ -19,11 +19,11 @@ package ptoth.fim.common
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val parent: NodeType) {
+class Node(val itemId: Int, val parent: Node) {
 
   var frequency: Int = 0
   // scalastyle:off null
-  var sibling: NodeType = null
+  var sibling: Node = null
   // scalastyle:on
 
   def path: String = s"${if (parent == null) "null" else parent.path}->$itemId"
@@ -32,20 +32,20 @@ class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val parent: Node
 
 }
 
-class Header[NodeType >: Null <: Node[NodeType]] {
+class Header {
 
   // scalastyle:off null
-  var node: NodeType = null
+  var node: Node = null
   // scalastyle:on
 
-  def prepend(node: NodeType): Unit = {
+  def prepend(node: Node): Unit = {
     node.sibling = this.node
     this.node = node
   }
 
 }
 
-class Tree[NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]](val headers: Array[HeaderType]) {
+class Tree[HeaderType <: Header](val headers: Array[HeaderType]) {
 
   var nNodes: Int    = 0
   var nItemSets: Int = 0
@@ -60,15 +60,15 @@ class Tree[NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]](v
 
 }
 
-class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null) {
+class BuilderNode(val node: Node = null) {
 
-  lazy val children: mutable.Map[Int, BuilderNode[NodeType]] = mutable.Map.empty
+  lazy val children: mutable.Map[Int, BuilderNode] = mutable.Map.empty
 
   def add(itemIdSet: Array[Int],
           itemIdIndex: Int,
-          headers: Array[_ <: Header[NodeType]],
+          headers: Array[_ <: Header],
           frequency: Int,
-          nodeCreator: (Int, NodeType) => NodeType): Int =
+          nodeCreator: (Int, Node) => Node): Int =
     if (itemIdIndex < itemIdSet.size) {
       val itemId        = itemIdSet(itemIdIndex)
       var sizeIncrement = 0
@@ -92,18 +92,18 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
 
 }
 
-class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]: ClassTag](
+class TreeBuilder[ItemType, HeaderType <: Header: ClassTag](
     itemEncoder: ItemEncoder[ItemType],
     headerCreator: (Int, ItemType, Int) => HeaderType,
-    nodeCreator: (Int, NodeType) => NodeType
+    nodeCreator: (Int, Node) => Node
 ) {
-  val fpTree = new Tree[NodeType, HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
+  val fpTree = new Tree[HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
     case ((item, frequency), itemId) => headerCreator(itemId, item, frequency)
   })
 
-  private val builderNode = new BuilderNode[NodeType]()
+  private val builderNode = new BuilderNode()
 
-  def add(itemset: Array[ItemType], frequency: Int): TreeBuilder[ItemType, NodeType, HeaderType] = {
+  def add(itemset: Array[ItemType], frequency: Int): TreeBuilder[ItemType, HeaderType] = {
     val itemIdSet: Array[Int] = itemEncoder.encodeItems(itemset)
 
     fpTree.nNodes += builderNode.add(itemIdSet, 0, fpTree.headers, frequency, nodeCreator)
