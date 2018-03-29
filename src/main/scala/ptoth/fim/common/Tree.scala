@@ -112,4 +112,11 @@ class TreeBuilder[ItemType, HeaderType <: Header: ClassTag](
     this
   }
 
+  def addEncoded(itemIdSet: Array[Int], frequency: Int): TreeBuilder[ItemType, HeaderType] = {
+    fpTree.nNodes += builderNode.add(itemIdSet, 0, fpTree.headers, frequency, nodeCreator)
+    fpTree.nItemSets += 1
+
+    this
+  }
+
 }

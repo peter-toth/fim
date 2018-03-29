@@ -172,19 +172,37 @@ object FPGrowth {
               (_, oldItemId, frequency) => new FPHeader(fpTree.headers(oldItemId).item, frequency),
               (itemId, parent) => new Node(itemId, parent)
             )
+
+          val t3 = System.currentTimeMillis
+
+          Measure.nHeaderBuilding += 1
+          Measure.tHeaderBuilding += (t3 - t1)
+
           Iterator
             .iterate(fpTree.headers(itemId).node)(_.sibling)
             .takeWhile(_ != null)
             .foreach { node =>
-              val oldItemIdSet = Iterator.iterate(node)(_.parent).takeWhile(_ != null).map(_.itemId).toArray
+              val t8 = System.currentTimeMillis
 
-              conditionalFPTreeBuilder.add(oldItemIdSet, node.frequency)
+              val oldItemIdSet = Iterator
+                .iterate(node)(_.parent)
+                .takeWhile(_ != null)
+                .flatMap(node => oldItemIdEncoder.encodeItem(node.itemId))
+                .toArray
+                .sorted
+
+              val t9 = System.currentTimeMillis
+
+              Measure.nOldItemSetGeneration += 1
+              Measure.tOldItemSetGeneration += (t9 - t8)
+
+              conditionalFPTreeBuilder.addEncoded(oldItemIdSet, node.frequency)
             }
 
           val t4 = System.currentTimeMillis
 
           Measure.nConditionalTreeBuilding += 1
-          Measure.tConditionalTreeBuilding += (t4 - t1)
+          Measure.tConditionalTreeBuilding += (t4 - t3)
 
           val conditionalFPTree = conditionalFPTreeBuilder.fpTree
 
@@ -258,6 +276,10 @@ object Measure {
   var nSinglePathMining: Int         = 0
   var tTreeBuilding: Long            = 0
   var nTreeBuilding: Int             = 0
+  var tHeaderBuilding: Long          = 0
+  var nHeaderBuilding: Int           = 0
+  var tOldItemSetGeneration: Long    = 0
+  var nOldItemSetGeneration: Int     = 0
 
   override def toString: String =
     s"tFrequencyCounting: $tFrequencyCounting\n" +
@@ -267,6 +289,10 @@ object Measure {
     s"tSinglePathMining: $tSinglePathMining\n" +
     s"nSinglePathMining: $nSinglePathMining\n" +
     s"tTreeBuilding: $tTreeBuilding\n" +
-    s"nTreeBuilding: $nTreeBuilding"
+    s"nTreeBuilding: $nTreeBuilding\n" +
+    s"tHeaderBuilding: $tHeaderBuilding\n" +
+    s"nHeaderBuilding: $nHeaderBuilding\n" +
+    s"tOldItemSetGeneration: $tOldItemSetGeneration\n" +
+    s"nOldItemSetGeneration: $nOldItemSetGeneration\n"
 
 }
