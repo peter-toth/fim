@@ -17,7 +17,7 @@
 package ptoth.fim.fpgrowth
 
 import org.scalatest.FunSuite
-import ptoth.fim.{ CountingAccumulator, FrequentItemSet, FrequentItemSetAccumulator, FrequentItemSetUtils }
+import ptoth.fim.{ CountingAccumulator, FrequentItemSet, FrequentItemSetUtils }
 
 class FPGrowthTest extends FunSuite {
 

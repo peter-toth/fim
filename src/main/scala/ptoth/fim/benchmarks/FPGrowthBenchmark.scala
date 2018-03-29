@@ -17,7 +17,7 @@
 package ptoth.fim.benchmarks
 
 import ptoth.fim.fpgrowth.FPGrowth
-import ptoth.fim.{ CountingAccumulator, FrequentItemSet, FrequentItemSetAccumulator }
+import ptoth.fim.{ CountingAccumulator, FrequentItemSetAccumulator }
 
 object FPGrowthBenchmark {
 
