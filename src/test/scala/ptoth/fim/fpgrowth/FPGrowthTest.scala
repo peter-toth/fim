@@ -266,12 +266,16 @@ class FPGrowthTest extends FunSuite {
     val itemset          = FrequentItemSetUtils.readItemSetFile("data/T10I4D100K.dat")
     val frequentItemSets = FPGrowth(itemset, 5000)
 
+    println(s"Measure: $Measure")
+
     assert(frequentItemSets.size == 10)
   }
 
   test("Mining of T40I10D100K database with minFrequency = 1000 should return 65236 frequent itemsets") {
     val itemset          = FrequentItemSetUtils.readItemSetFile("data/T40I10D100K.dat")
     val frequentItemSets = FPGrowth(itemset, 1000)
+
+    println(s"Measure: $Measure")
 
     assert(frequentItemSets.size == 65236)
   }

@@ -43,6 +43,8 @@ object FPGrowth {
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
       accumulator: FrequentItemSetAccumulator[ItemType] = SetAccumulator[ItemType]()
   ): accumulator.type = {
+    val t0 = System.currentTimeMillis
+
     val itemFrequencies = mutable.Map.empty[ItemType, Int]
     itemsets.foreach(_.toSet[ItemType].foreach(item => itemFrequencies(item) = itemFrequencies.getOrElse(item, 0) + 1))
 
@@ -50,6 +52,11 @@ object FPGrowth {
     val fpTreeBuilder = new FPTreeBuilder(itemEncoder)
 
     itemsets.foreach(fpTreeBuilder.add(_, 1))
+
+    val t1 = System.currentTimeMillis
+
+    Measure.nTreeBuilding += 1
+    Measure.tTreeBuilding += (t1 - t0)
 
     val fPTree = fpTreeBuilder.fpTree
 
@@ -112,6 +119,9 @@ object FPGrowth {
         }
 
         if (header.node.sibling == null) {
+
+          val t0 = System.currentTimeMillis
+
           var height =
             Iterator.iterate(header.node.parent)(_.parent).takeWhile(_ != null).foldLeft(0)((height, _) => height + 1)
 
@@ -125,7 +135,15 @@ object FPGrowth {
                          enableParallel,
                          frequentItemSet,
                          accumulator)
+
+          val t1 = System.currentTimeMillis
+
+          Measure.nSinglePathMining += 1
+          Measure.tSinglePathMining += (t1 - t0)
+
         } else {
+          val t0 = System.currentTimeMillis
+
           val oldItemIdAndFrequencies = new Array[Int](fpTree.headers.size);
 
           Iterator
@@ -140,6 +158,11 @@ object FPGrowth {
                     currentNode => oldItemIdAndFrequencies(currentNode.itemId) += node.frequency
                 )
             )
+
+          val t1 = System.currentTimeMillis
+
+          Measure.nFrequencyCounting += 1
+          Measure.tFrequencyCounting += (t1 - t0)
 
           val oldItemIdEncoder = ContinuousArrayEncoder(oldItemIdAndFrequencies, minFrequency)
 
@@ -157,6 +180,11 @@ object FPGrowth {
 
               conditionalFPTreeBuilder.add(oldItemIdSet, node.frequency)
             }
+
+          val t4 = System.currentTimeMillis
+
+          Measure.nConditionalTreeBuilding += 1
+          Measure.tConditionalTreeBuilding += (t4 - t1)
 
           val conditionalFPTree = conditionalFPTreeBuilder.fpTree
 
@@ -217,5 +245,28 @@ object FPGrowth {
         offset += 1
       }
     }
+
+}
+
+object Measure {
+
+  var tFrequencyCounting: Long       = 0
+  var nFrequencyCounting: Int        = 0
+  var tConditionalTreeBuilding: Long = 0
+  var nConditionalTreeBuilding: Int  = 0
+  var tSinglePathMining: Long        = 0
+  var nSinglePathMining: Int         = 0
+  var tTreeBuilding: Long            = 0
+  var nTreeBuilding: Int             = 0
+
+  override def toString: String =
+    s"tFrequencyCounting: $tFrequencyCounting\n" +
+    s"nFrequencyCounting: $nFrequencyCounting\n" +
+    s"tConditionalTreeBuilding: $tConditionalTreeBuilding\n" +
+    s"nConditionalTreeBuilding: $nConditionalTreeBuilding\n" +
+    s"tSinglePathMining: $tSinglePathMining\n" +
+    s"nSinglePathMining: $nSinglePathMining\n" +
+    s"tTreeBuilding: $tTreeBuilding\n" +
+    s"nTreeBuilding: $nTreeBuilding"
 
 }
