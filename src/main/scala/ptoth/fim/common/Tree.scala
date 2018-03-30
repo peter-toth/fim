@@ -16,9 +16,6 @@
 
 package ptoth.fim.common
 
-import scala.collection.mutable
-import scala.reflect.ClassTag
-
 class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val parent: NodeType) {
 
   var frequency: Int = 0
@@ -57,63 +54,5 @@ class Tree[NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]](v
           s"  $itemId - ${header}"
       }
       .mkString("\n")}\n)"
-
-}
-
-class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null) {
-
-  lazy val children: mutable.Map[Int, BuilderNode[NodeType]] = mutable.Map.empty
-
-  def add(itemIdSet: Array[Int],
-          itemIdIndex: Int,
-          headers: Array[_ <: Header[NodeType]],
-          frequency: Int,
-          nodeCreator: (Int, NodeType) => NodeType): Int =
-    if (itemIdIndex < itemIdSet.size) {
-      val itemId        = itemIdSet(itemIdIndex)
-      var sizeIncrement = 0
-      val child = children.getOrElseUpdate(
-        itemId, {
-          val node = nodeCreator(itemId, this.node)
-          headers(itemId).prepend(node)
-
-          sizeIncrement = 1
-
-          new BuilderNode(node)
-        }
-      )
-      child.node.frequency += frequency
-      child.add(itemIdSet, itemIdIndex + 1, headers, frequency, nodeCreator)
-
-      sizeIncrement
-    } else {
-      0
-    }
-
-}
-
-class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]: ClassTag](
-    itemEncoder: ItemEncoder[ItemType],
-    headerCreator: (Int, ItemType, Int) => HeaderType,
-    nodeCreator: (Int, NodeType) => NodeType
-) {
-  val fpTree = new Tree[NodeType, HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
-    case ((item, frequency), itemId) => headerCreator(itemId, item, frequency)
-  })
-
-  private val builderNode = new BuilderNode[NodeType]()
-
-  def addEncoded(itemIdSet: Array[Int], frequency: Int): TreeBuilder[ItemType, NodeType, HeaderType] = {
-    fpTree.nNodes += builderNode.add(itemIdSet, 0, fpTree.headers, frequency, nodeCreator)
-    fpTree.nItemSets += 1
-
-    this
-  }
-
-  def add(itemset: Array[ItemType], frequency: Int): TreeBuilder[ItemType, NodeType, HeaderType] = {
-    val itemIdSet: Array[Int] = itemEncoder.encodeItems(itemset)
-
-    addEncoded(itemIdSet, frequency)
-  }
 
 }
