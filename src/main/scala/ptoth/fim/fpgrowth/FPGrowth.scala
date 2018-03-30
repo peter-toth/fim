@@ -22,7 +22,16 @@ import ptoth.fim.common._
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class FPNode(override val itemId: Int, override val parent: FPNode) extends Node[FPNode](itemId, parent)
+class FPNode(override val itemId: Int, override val parent: FPNode) extends Node[FPNode](itemId, parent) {
+
+  override type DataType = Int
+
+  var frequency: Int = 0
+
+  override def update(data: DataType): Unit =
+    frequency += data
+
+}
 
 class FPHeader[ItemType](val item: ItemType, val frequency: Int) extends Header[FPNode]
 
@@ -70,7 +79,7 @@ object FPGrowth {
   }
 
   def mine[ItemType: ClassTag](
-      fpTree: Tree[FPNode, FPHeader[ItemType]],
+      fpTree: Tree[FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int = 1,
       maxItemSetSize: Int = 0,
@@ -92,7 +101,7 @@ object FPGrowth {
   }
 
   private def mine[ItemType: ClassTag](
-      fpTree: Tree[FPNode, FPHeader[ItemType]],
+      fpTree: Tree[FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int,
       maxItemSetSize: Int,
