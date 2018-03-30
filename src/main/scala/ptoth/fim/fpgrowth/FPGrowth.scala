@@ -22,14 +22,23 @@ import ptoth.fim.common._
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class FPNode(override val itemId: Int, override val parent: FPNode) extends Node[FPNode](itemId, parent)
+class FPNode(override val itemId: Int, override val parent: FPNode) extends Node[FPNode, Int](itemId, parent) {
 
-class FPHeader[ItemType](val item: ItemType, val frequency: Int) extends Header[FPNode]
+  var frequency: Int = 0
+
+  override def update(frequency: Int): Unit =
+    this.frequency += frequency
+
+}
+
+class FPHeader[ItemType](val item: ItemType, val frequency: Int) extends Header[FPNode, Int]
 
 class FPTreeBuilder[ItemType](itemEncoder: ItemEncoder[ItemType])
-    extends TreeBuilder[ItemType, FPNode, FPHeader[ItemType]](itemEncoder,
-                                                              (_, item, frequency) => new FPHeader(item, frequency),
-                                                              (itemId, parent) => new FPNode(itemId, parent))
+    extends TreeBuilder[ItemType, FPNode, Int, FPHeader[ItemType]](
+      itemEncoder,
+      (_, item, frequency) => new FPHeader(item, frequency),
+      (itemId, parent) => new FPNode(itemId, parent)
+    )
 
 object FPGrowth {
 
@@ -70,7 +79,7 @@ object FPGrowth {
   }
 
   def mine[ItemType: ClassTag](
-      fpTree: Tree[FPNode, FPHeader[ItemType]],
+      fpTree: Tree[FPNode, Int, FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int = 1,
       maxItemSetSize: Int = 0,
@@ -92,7 +101,7 @@ object FPGrowth {
   }
 
   private def mine[ItemType: ClassTag](
-      fpTree: Tree[FPNode, FPHeader[ItemType]],
+      fpTree: Tree[FPNode, Int, FPHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int,
       maxItemSetSize: Int,
@@ -146,7 +155,7 @@ object FPGrowth {
           val oldItemIdEncoder = ContinuousArrayEncoder(oldItemIdAndFrequencies, minFrequency)
 
           val conditionalFPTreeBuilder =
-            new TreeBuilder[Int, FPNode, FPHeader[ItemType]](
+            new TreeBuilder[Int, FPNode, Int, FPHeader[ItemType]](
               oldItemIdEncoder,
               (_, oldItemId, frequency) => new FPHeader(fpTree.headers(oldItemId).item, frequency),
               (itemId, parent) => new FPNode(itemId, parent)

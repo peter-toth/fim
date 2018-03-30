@@ -16,20 +16,21 @@
 
 package ptoth.fim.common
 
-class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val parent: NodeType) {
+abstract class Node[NodeType >: Null <: Node[NodeType, DataType], DataType](val itemId: Int, val parent: NodeType) {
 
-  var frequency: Int = 0
+  def update(data: DataType)
+
   // scalastyle:off null
   var sibling: NodeType = null
   // scalastyle:on
 
   def path: String = s"${if (parent == null) "null" else parent.path}->$itemId"
 
-  override def toString: String = s"Node($path: $frequency)"
+  override def toString: String = s"Node($path)"
 
 }
 
-class Header[NodeType >: Null <: Node[NodeType]] {
+class Header[NodeType >: Null <: Node[NodeType, DataType], DataType] {
 
   // scalastyle:off null
   var node: NodeType = null
@@ -42,7 +43,9 @@ class Header[NodeType >: Null <: Node[NodeType]] {
 
 }
 
-class Tree[NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]](val headers: Array[HeaderType]) {
+class Tree[NodeType >: Null <: Node[NodeType, DataType], DataType, HeaderType <: Header[NodeType, DataType]](
+    val headers: Array[HeaderType]
+) {
 
   var nNodes: Int    = 0
   var nItemSets: Int = 0
