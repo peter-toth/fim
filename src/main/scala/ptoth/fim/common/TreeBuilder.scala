@@ -29,26 +29,28 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
           itemIdIndex: Int,
           headers: Array[_ <: Header[NodeType]],
           data: NodeType#DataType,
-          nodeCreator: (Int, NodeType) => NodeType): Int =
-    if (itemIdIndex < itemIdSet.size) {
+          nodeCreator: (Int, NodeType) => NodeType): (Int, Boolean) =
+    if (itemIdIndex == itemIdSet.size) {
+      (0, false)
+    } else {
       val itemId        = itemIdSet(itemIdIndex)
       var sizeIncrement = 0
+      var split         = false
       val child = children.getOrElseUpdate(
         itemId, {
           val node = nodeCreator(itemId, this.node)
           headers(itemId).prepend(node)
 
           sizeIncrement = 1
+          split = children.size >= 1
 
           new BuilderNode(node)
         }
       )
       child.node.update(data)
-      child.add(itemIdSet, itemIdIndex + 1, headers, data, nodeCreator)
+      val (childSizeIncrement, childSplit) = child.add(itemIdSet, itemIdIndex + 1, headers, data, nodeCreator)
 
-      sizeIncrement
-    } else {
-      0
+      (sizeIncrement + childSizeIncrement, split || childSplit)
     }
 
 }
@@ -58,15 +60,17 @@ class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: He
     headerCreator: (Int, ItemType, Int) => HeaderType,
     nodeCreator: (Int, NodeType) => NodeType
 ) {
-  val fpTree = new Tree[HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
+  val tree = new Tree[HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
     case ((item, frequency), itemId) => headerCreator(itemId, item, frequency)
   })
 
   private val builderNode = new BuilderNode[NodeType]()
 
   def addEncoded(itemIdSet: Array[Int], data: NodeType#DataType): TreeBuilder[ItemType, NodeType, HeaderType] = {
-    fpTree.nNodes += builderNode.add(itemIdSet, 0, fpTree.headers, data, nodeCreator)
-    fpTree.nItemSets += 1
+    val (nNodes, split) = builderNode.add(itemIdSet, 0, tree.headers, data, nodeCreator)
+    tree.nNodes += nNodes
+    tree.singlePath = tree.singlePath && !split
+    tree.nItemSets += 1
 
     this
   }

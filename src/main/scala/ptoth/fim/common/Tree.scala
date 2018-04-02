@@ -46,8 +46,11 @@ class Header[NodeType >: Null <: Node[NodeType]] {
 
 class Tree[HeaderType <: Header[_]](val headers: Array[HeaderType]) {
 
-  var nNodes: Int    = 0
-  var nItemSets: Int = 0
+  var nNodes: Int         = 0
+  var singlePath: Boolean = true
+  var nItemSets: Int      = 0
+
+  def isEmpty: Boolean = nNodes == 0
 
   override def toString: String =
     s"Header(\n${headers.zipWithIndex

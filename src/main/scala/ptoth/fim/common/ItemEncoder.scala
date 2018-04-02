@@ -21,7 +21,6 @@ trait ItemEncoder[ItemType] {
   def itemFrequencies: Array[(ItemType, Int)]
   def encodeItem(item: ItemType): Option[Int]
   def encodeItems(itemset: Array[ItemType]): Array[Int] = itemset.flatMap(encodeItem).toSet[Int].toArray.sorted
-//  def decode(itemId: Int): Option[ItemType]
 
 }
 
@@ -30,13 +29,9 @@ case class MapEncoder[ItemType](allItemFrequencies: collection.Map[ItemType, Int
 
   override val itemFrequencies = allItemFrequencies.filter(_._2 >= minFrequency).toArray.sortBy(-_._2)
 
-  val itemIdToItem = itemFrequencies.map(_._1)
-  val itemToItemId = itemIdToItem.zipWithIndex.toMap
+  val itemToItemId = itemFrequencies.map(_._1).zipWithIndex.toMap
 
   override def encodeItem(item: ItemType): Option[Int] = itemToItemId.get(item)
-
-//  override def decode(itemId: Int): Option[ItemType] =
-//    if (itemId >= 0 && itemId < itemIdToItem.length) Some(itemIdToItem(itemId)) else None
 
 }
 
