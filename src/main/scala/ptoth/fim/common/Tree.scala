@@ -16,14 +16,12 @@
 
 package ptoth.fim.common
 
-abstract class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val parent: NodeType) {
+abstract class Node[NodeType <: Node[NodeType]](val itemId: Int, val parent: NodeType) {
 
   type DataType
   def update(data: NodeType#DataType)
 
-  // scalastyle:off null
-  var sibling: NodeType = null
-  // scalastyle:on
+  var sibling: NodeType = _
 
   def path: String = s"${if (parent == null) "null" else parent.path}->$itemId"
 
@@ -31,11 +29,9 @@ abstract class Node[NodeType >: Null <: Node[NodeType]](val itemId: Int, val par
 
 }
 
-class Header[NodeType >: Null <: Node[NodeType]] {
+class Header[NodeType <: Node[NodeType]] {
 
-  // scalastyle:off null
-  var node: NodeType = null
-  // scalastyle:on
+  var node: NodeType = _
 
   def prepend(node: NodeType): Unit = {
     node.sibling = this.node
@@ -56,7 +52,7 @@ class Tree[HeaderType <: Header[_]](val headers: Array[HeaderType]) {
     s"Header(\n${headers.zipWithIndex
       .map {
         case (header, itemId) =>
-          s"  $itemId - ${header}"
+          s"  $itemId - $header"
       }
       .mkString("\n")}\n)"
 

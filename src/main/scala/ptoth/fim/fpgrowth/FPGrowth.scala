@@ -37,7 +37,7 @@ class FPTreeHeader[ItemType](val item: ItemType, val frequency: Int) extends Hea
 
 class FPTreeBuilder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int)
     extends TreeBuilder[ItemType, FPNode, FPTreeHeader[ItemType]](
-      new MapEncoder(itemFrequencies, minFrequency),
+      MapEncoder(itemFrequencies, minFrequency),
       (_, item, frequency) => new FPTreeHeader(item, frequency),
       (itemId, parent) => new FPNode(itemId, parent)
     )
@@ -115,7 +115,7 @@ object FPGrowth {
       //val parallel = fpTree.nNodes > 20 && enableParallel
 
       var itemId = 0.max(minItemSetSize - baseItemSet.size - 1)
-      while (itemId < fpTree.headers.size) {
+      while (itemId < fpTree.headers.length) {
         val header = fpTree.headers(itemId)
 
         val frequentItemSet: FrequentItemSet[ItemType] = baseItemSet.addItem(header.item, header.frequency)
@@ -124,7 +124,7 @@ object FPGrowth {
         }
 
         if (header.node.sibling == null) {
-          var height = Iterator.iterate(header.node.parent)(_.parent).takeWhile(_ != null).size
+          val height = Iterator.iterate(header.node.parent)(_.parent).takeWhile(_ != null).size
 
           mineSinglePath(header.node,
                          height,
@@ -137,7 +137,7 @@ object FPGrowth {
                          frequentItemSet,
                          accumulator)
         } else {
-          val oldItemIdAndFrequencies = new Array[Int](fpTree.headers.size);
+          val oldItemIdAndFrequencies = new Array[Int](fpTree.headers.length)
 
           Iterator
             .iterate(fpTree.headers(itemId).node)(_.sibling)
@@ -213,7 +213,7 @@ object FPGrowth {
       var offset      = 1
       var currentNode = node
       while (offset <= height - 0.max(minItemSetSize - baseItemSet.size - 1)) {
-        currentNode = currentNode.parent;
+        currentNode = currentNode.parent
 
         val frequentItemSet = baseItemSet.addItem(headers(currentNode.itemId).item, frequency)
         if (frequentItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {

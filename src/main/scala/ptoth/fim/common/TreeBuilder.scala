@@ -30,7 +30,7 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
           headers: Array[_ <: Header[NodeType]],
           data: NodeType#DataType,
           nodeCreator: (Int, NodeType) => NodeType): (Int, Boolean) =
-    if (itemIdIndex == itemIdSet.size) {
+    if (itemIdIndex == itemIdSet.length) {
       (0, false)
     } else {
       val itemId        = itemIdSet(itemIdIndex)
@@ -42,7 +42,7 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
           headers(itemId).prepend(node)
 
           sizeIncrement = 1
-          split = children.size >= 1
+          split = children.nonEmpty
 
           new BuilderNode(node)
         }
@@ -67,10 +67,12 @@ class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: He
   private val builderNode = new BuilderNode[NodeType]()
 
   def addEncoded(itemIdSet: Array[Int], data: NodeType#DataType): TreeBuilder[ItemType, NodeType, HeaderType] = {
-    val (nNodes, split) = builderNode.add(itemIdSet, 0, tree.headers, data, nodeCreator)
-    tree.nNodes += nNodes
-    tree.singlePath = tree.singlePath && !split
-    tree.nItemSets += 1
+    if (!itemIdSet.isEmpty) {
+      val (nNodes, split) = builderNode.add(itemIdSet, 0, tree.headers, data, nodeCreator)
+      tree.nNodes += nNodes
+      tree.singlePath &= !split
+      tree.nItemSets += 1
+    }
 
     this
   }

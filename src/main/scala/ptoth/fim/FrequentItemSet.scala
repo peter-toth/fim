@@ -22,10 +22,12 @@ import scala.reflect.ClassTag
 
 case class FrequentItemSet[ItemType: ClassTag](items: Array[ItemType], frequency: Int) {
 
-  def size: Int = items.size
+  def size: Int = items.length
+
+  def isEmpty: Boolean = size == 0
 
   def addItem(item: ItemType, frequency: Int): FrequentItemSet[ItemType] = {
-    val items = new Array[ItemType](this.items.size + 1)
+    val items = new Array[ItemType](this.items.length + 1)
     items(0) = item
     this.items.copyToArray(items, 1)
 
@@ -33,9 +35,9 @@ case class FrequentItemSet[ItemType: ClassTag](items: Array[ItemType], frequency
   }
 
   def addItems(newItems: Array[ItemType], frequency: Int): FrequentItemSet[ItemType] = {
-    val items = new Array[ItemType](this.items.size + newItems.size)
-    newItems.copyToArray(items, 0, newItems.size)
-    this.items.copyToArray(items, newItems.size, this.items.size)
+    val items = new Array[ItemType](this.items.length + newItems.length)
+    newItems.copyToArray(items, 0, newItems.length)
+    this.items.copyToArray(items, newItems.length, this.items.length)
 
     FrequentItemSet(items, frequency)
   }

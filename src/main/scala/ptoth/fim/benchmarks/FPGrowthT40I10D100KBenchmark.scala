@@ -22,12 +22,10 @@ import ptoth.fim.{ FrequentItemSetAccumulator, FrequentItemSetUtils }
 @State(Scope.Benchmark)
 class FPGrowthT40I10D100KBenchmark {
 
-  // scalastyle:off null
-  var itemset: Array[Array[Int]] = null
-  // scalastyle:on
+  var itemset: Array[Array[Int]] = _
 
   @Setup
-  def setup: Unit = itemset = FrequentItemSetUtils.readItemSetFile("data/T40I10D100K.dat")
+  def setup(): Unit = itemset = FrequentItemSetUtils.readItemSetFile("data/T40I10D100K.dat")
 
   @Benchmark
   @BenchmarkMode(Array(Mode.AverageTime))

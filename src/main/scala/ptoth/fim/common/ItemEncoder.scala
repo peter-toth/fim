@@ -20,16 +20,17 @@ trait ItemEncoder[ItemType] {
 
   def itemFrequencies: Array[(ItemType, Int)]
   def encodeItem(item: ItemType): Option[Int]
-  def encodeItems(itemset: Array[ItemType]): Array[Int] = itemset.flatMap(encodeItem).toSet[Int].toArray.sorted
+  def encodeItems(itemset: Array[ItemType]): Array[Int] = itemset.flatMap(encodeItem).distinct.sorted
 
 }
 
 case class MapEncoder[ItemType](allItemFrequencies: collection.Map[ItemType, Int], minFrequency: Int)
     extends ItemEncoder[ItemType] {
 
-  override val itemFrequencies = allItemFrequencies.filter(_._2 >= minFrequency).toArray.sortBy(-_._2)
+  override val itemFrequencies: Array[(ItemType, Int)] =
+    allItemFrequencies.filter(_._2 >= minFrequency).toArray.sortBy(-_._2)
 
-  val itemToItemId = itemFrequencies.map(_._1).zipWithIndex.toMap
+  private val itemToItemId = itemFrequencies.map(_._1).zipWithIndex.toMap
 
   override def encodeItem(item: ItemType): Option[Int] = itemToItemId.get(item)
 
@@ -37,11 +38,12 @@ case class MapEncoder[ItemType](allItemFrequencies: collection.Map[ItemType, Int
 
 case class ContinuousArrayEncoder(allItemFrequencies: Array[Int], minFrequency: Int) extends ItemEncoder[Int] {
 
-  override val itemFrequencies = allItemFrequencies.zipWithIndex.map(_.swap).filter(_._2 >= minFrequency).sortBy(-_._2)
+  override val itemFrequencies: Array[(Int, Int)] =
+    allItemFrequencies.zipWithIndex.map(_.swap).filter(_._2 >= minFrequency).sortBy(-_._2)
 
-  val itemToItemId = {
-    val a = Array.fill(allItemFrequencies.size)(-1)
-    Iterator.range(0, itemFrequencies.size).foreach(i => a(itemFrequencies(i)._1) = i)
+  private val itemToItemId = {
+    val a = Array.fill(allItemFrequencies.length)(-1)
+    Iterator.range(0, itemFrequencies.length).foreach(i => a(itemFrequencies(i)._1) = i)
     a
   }
 
