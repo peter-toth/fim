@@ -56,7 +56,7 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
 }
 
 class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]: ClassTag](
-    itemEncoder: ItemEncoder[ItemType],
+    val itemEncoder: ItemEncoder[ItemType],
     headerCreator: (Int, ItemType, Int) => HeaderType,
     nodeCreator: (Int, NodeType) => NodeType
 ) {

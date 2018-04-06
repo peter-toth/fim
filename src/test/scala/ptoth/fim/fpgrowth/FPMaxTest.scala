@@ -82,11 +82,18 @@ class FPMaxTest extends FunSuite {
     )
   }
 
-  test("Mining of T10I4D100K database with minFrequency = 500 should return 10 frequent itemsets") {
+  test("Mining of T10I4D100K database with minFrequency = 500 should return 585 frequent itemsets") {
     val itemset          = FrequentItemSetUtils.readItemSetFile("data/T10I4D100K.dat")
     val frequentItemSets = FPMax(itemset, 500)
 
     assert(frequentItemSets.size == 585)
+  }
+
+  test("Mining of T40I10D100K database with minFrequency = 1000 should return 10 frequent itemsets") {
+    val itemset          = FrequentItemSetUtils.readItemSetFile("data/T40I10D100K.dat")
+    val frequentItemSets = FPMax(itemset, 1000)
+
+    assert(frequentItemSets.size == 21692)
   }
 
   /*test("Mining of a one element database with minFrequency = 2 should return nothing") {
