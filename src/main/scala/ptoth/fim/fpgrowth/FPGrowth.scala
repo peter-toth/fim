@@ -89,6 +89,10 @@ object FPGrowth {
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
       accumulator: FrequentItemSetAccumulator[ItemType] = SetAccumulator[ItemType]()
   ): accumulator.type = {
+    if (baseItemSet.nonEmpty && baseItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
+      accumulator.add(baseItemSet.get)
+    }
+
     mine(fpTree,
          minFrequency,
          minItemSetSize,
@@ -114,33 +118,34 @@ object FPGrowth {
     if (maxItemSetSize == 0 || baseItemSet.size < maxItemSetSize) {
       //val parallel = fpTree.nNodes > 20 && enableParallel
 
-      var itemId = 0.max(minItemSetSize - baseItemSet.size - 1)
-      while (itemId < fpTree.headers.length) {
-        val header = fpTree.headers(itemId)
+      if (fpTree.isEmpty) {} else if (fpTree.singlePath) {
+        val header = fpTree.headers.last
 
-        val frequentItemSet: FrequentItemSet[ItemType] = baseItemSet.addItem(header.item, header.frequency)
-        if (frequentItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
-          accumulator.add(frequentItemSet)
-        }
+        val height = Iterator.iterate(header.node)(_.parent).takeWhile(_ != null).size
 
-        if (header.node.sibling == null) {
-          val height = Iterator.iterate(header.node.parent)(_.parent).takeWhile(_ != null).size
+        mineSinglePath(header.node,
+                       height,
+                       fpTree.headers,
+                       header.frequency,
+                       minItemSetSize,
+                       maxItemSetSize,
+                       maxNItemSets,
+                       enableParallel,
+                       baseItemSet,
+                       accumulator)
+      } else {
+        Iterator.range(0.max(minItemSetSize - baseItemSet.size - 1), fpTree.headers.length).foreach { itemId =>
+          val header = fpTree.headers(itemId)
 
-          mineSinglePath(header.node,
-                         height,
-                         fpTree.headers,
-                         header.frequency,
-                         minItemSetSize,
-                         maxItemSetSize,
-                         maxNItemSets,
-                         enableParallel,
-                         frequentItemSet,
-                         accumulator)
-        } else {
+          val frequentItemSet: FrequentItemSet[ItemType] = baseItemSet.addItem(header.item, header.frequency)
+          if (frequentItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
+            accumulator.add(frequentItemSet)
+          }
+
           val oldItemIdAndFrequencies = new Array[Int](fpTree.headers.length)
 
           Iterator
-            .iterate(fpTree.headers(itemId).node)(_.sibling)
+            .iterate(header.node)(_.sibling)
             .takeWhile(_ != null)
             .foreach(
               node =>
@@ -162,7 +167,7 @@ object FPGrowth {
             )
 
           Iterator
-            .iterate(fpTree.headers(itemId).node)(_.sibling)
+            .iterate(header.node)(_.sibling)
             .takeWhile(_ != null)
             .foreach { node =>
               val itemIdSet = Iterator
@@ -186,8 +191,6 @@ object FPGrowth {
                frequentItemSet,
                accumulator)
         }
-
-        itemId += 1
       }
     }
 
@@ -210,18 +213,17 @@ object FPGrowth {
       //val parallel = fpTree.nNodes > 20 && enableParallel
 
       // at most this level of ancestor nodes of header.node can be the startNode to satisfy minItemSetSize
-      var offset      = 1
       var currentNode = node
-      while (offset <= height - 0.max(minItemSetSize - baseItemSet.size - 1)) {
-        currentNode = currentNode.parent
-
+      Iterator.range(1, height - 0.max(minItemSetSize - baseItemSet.size - 1) + 1).foreach { level =>
         val frequentItemSet = baseItemSet.addItem(headers(currentNode.itemId).item, frequency)
         if (frequentItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
           accumulator.add(frequentItemSet)
         }
 
+        currentNode = currentNode.parent
+
         mineSinglePath(currentNode,
-                       height - offset,
+                       height - level,
                        headers,
                        frequency,
                        minItemSetSize,
@@ -230,8 +232,6 @@ object FPGrowth {
                        enableParallel,
                        frequentItemSet,
                        accumulator)
-
-        offset += 1
       }
     }
 
