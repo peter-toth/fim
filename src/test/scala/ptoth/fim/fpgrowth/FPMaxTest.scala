@@ -31,14 +31,14 @@ class FPMaxTest extends FunSuite {
   test("Mining of {{A}}") {
     val frequentItemSets = FPMax(Array(Array("A")), 1)
 
-    assert(frequentItemSets.set === Set(FrequentItemSet(Array("A"), 1)))
+    assert(frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A"), 1)))
   }
 
   test("Mining of {{A, B}}") {
     val frequentItemSets = FPMax(Array(Array("A", "B")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 1))
     )
   }
 
@@ -46,7 +46,7 @@ class FPMaxTest extends FunSuite {
     val frequentItemSets = FPMax(Array(Array("A", "B", "C")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B", "C"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B", "C"), 1))
     )
   }
 
@@ -54,7 +54,8 @@ class FPMaxTest extends FunSuite {
     val frequentItemSets = FPMax(Array(Array("A"), Array("B")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A"), 1), FrequentItemSet(Array("B"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A"), 1),
+                                                                          FrequentItemSet(Array("B"), 1))
     )
   }
 
@@ -62,7 +63,7 @@ class FPMaxTest extends FunSuite {
     val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 1))
     )
   }
 
@@ -70,7 +71,7 @@ class FPMaxTest extends FunSuite {
     val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B"), 2))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 2))
     )
   }
 
@@ -78,7 +79,17 @@ class FPMaxTest extends FunSuite {
     val frequentItemSets = FPMax(Array(Array("A", "B"), Array("C")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B"), 1), FrequentItemSet(Array("C"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 1),
+                                                                          FrequentItemSet(Array("C"), 1))
+    )
+  }
+
+  test("Mining of a {{A, B}, {A, B}, {A}, {C}}") {
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B"), Array("A"), Array("C")), 1)
+
+    assert(
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 2),
+                                                                          FrequentItemSet(Array("C"), 1))
     )
   }
 
@@ -108,7 +119,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "B", "C"), 1),
@@ -125,7 +136,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "B", "C"), 1),
@@ -152,7 +163,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "B", "C"), 1),
           FrequentItemSet(Array("A", "B", "C", "D"), 1),
@@ -175,7 +186,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A", "B", "C"), 1),
           FrequentItemSet(Array("A", "B", "C", "D"), 1),
           FrequentItemSet(Array("A", "B", "D"), 1),
@@ -192,7 +203,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A", "B", "C", "D"), 1)
         )
     )
@@ -205,7 +216,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "B", "C"), 1),
@@ -231,7 +242,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "C"), 1),
@@ -253,7 +264,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("B"), 1),
           FrequentItemSet(Array("C"), 1),
@@ -269,7 +280,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "B", "C"), 1),
           FrequentItemSet(Array("A", "B", "D"), 1),
@@ -291,7 +302,7 @@ class FPMaxTest extends FunSuite {
 
     assert(
       frequentItemSets.set ==
-        Set(
+        List(
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "C"), 1),
           FrequentItemSet(Array("A", "D"), 1),

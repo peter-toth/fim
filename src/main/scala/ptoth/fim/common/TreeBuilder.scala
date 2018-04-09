@@ -39,7 +39,7 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
       val child = children.getOrElseUpdate(
         itemId, {
           val node = nodeCreator(itemId, this.node)
-          headers(itemId).prepend(node)
+          headers(itemId).prepend(node, itemIdIndex)
 
           sizeIncrement = 1
           split = children.nonEmpty
@@ -72,6 +72,7 @@ class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: He
       tree.nNodes += nNodes
       tree.singlePath &= !split
       tree.nItemSets += 1
+      tree.height = tree.height.max(itemIdSet.length)
     }
 
     this

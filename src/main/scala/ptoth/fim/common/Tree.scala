@@ -23,6 +23,8 @@ abstract class Node[NodeType <: Node[NodeType]](val itemId: Int, val parent: Nod
 
   var sibling: NodeType = _
 
+  def height: Int = Iterator.iterate(this)(_.parent).takeWhile(_ != null).size
+
   def path: String = s"${if (parent == null) "null" else parent.path}->$itemId"
 
   override def toString: String = s"Node($path)"
@@ -33,10 +35,12 @@ class Header[NodeType <: Node[NodeType]] {
 
   var node: NodeType = _
 
-  def prepend(node: NodeType): Unit = {
+  def prepend(node: NodeType, level: Int): Unit = {
     node.sibling = this.node
     this.node = node
   }
+
+  override def toString: String = Iterator.iterate(node)(_.sibling).takeWhile(_ != null).mkString("\t")
 
 }
 
@@ -45,11 +49,13 @@ class Tree[HeaderType <: Header[_]](val headers: Array[HeaderType]) {
   var nNodes: Int         = 0
   var singlePath: Boolean = true
   var nItemSets: Int      = 0
+  var height: Int         = 0
 
   def isEmpty: Boolean = nNodes == 0
+  def isMaxHeight      = height == headers.length
 
   override def toString: String =
-    s"Header(\n${headers.zipWithIndex
+    s"Tree(\n${headers.zipWithIndex
       .map {
         case (header, itemId) =>
           s"  $itemId - $header"

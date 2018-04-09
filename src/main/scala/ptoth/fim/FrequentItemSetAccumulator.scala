@@ -16,7 +16,7 @@
 
 package ptoth.fim
 
-import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 trait FrequentItemSetAccumulator[ItemType] {
 
@@ -25,23 +25,25 @@ trait FrequentItemSetAccumulator[ItemType] {
 
 }
 
-case class SetAccumulator[ItemType](
-    set: mutable.Set[FrequentItemSet[ItemType]] = mutable.Set.empty[FrequentItemSet[ItemType]]
-) extends FrequentItemSetAccumulator[ItemType] {
+case class ListAccumulator[ItemType]() extends FrequentItemSetAccumulator[ItemType] {
+
+  private val list: ListBuffer[FrequentItemSet[ItemType]] = ListBuffer.empty[FrequentItemSet[ItemType]]
 
   override def add(frequentItemSet: FrequentItemSet[ItemType]): this.type = {
-    set += frequentItemSet
+    list += frequentItemSet
 
     this
   }
 
-  override def size: Int = set.size
+  override def size: Int = list.size
+
+  def items: List[FrequentItemSet[ItemType]] = list.toList
 
 }
 
 case class CountingAccumulator[ItemType]() extends FrequentItemSetAccumulator[ItemType] {
 
-  var n: Int = 0
+  private var n: Int = 0
 
   override def add(frequentItemSet: FrequentItemSet[ItemType]): this.type = {
     n += 1

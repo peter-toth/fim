@@ -30,7 +30,7 @@ class FPGrowthTest extends FunSuite {
   test("Mining of a one element database with minFrequency = 1 should return the only element") {
     val frequentItemSets = FPGrowth(Array(Array("A")), 1)
 
-    assert(frequentItemSets.set === Set(FrequentItemSet(Array("A"), 1)))
+    assert(frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A"), 1)))
   }
 
   test("Mining of a one element database with minFrequency = 2 should return nothing") {
@@ -43,9 +43,9 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B")), 1)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A"), 1),
-                                   FrequentItemSet(Array("A", "B"), 1),
-                                   FrequentItemSet(Array("B"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B"), 1),
+                                                                          FrequentItemSet(Array("A"), 1),
+                                                                          FrequentItemSet(Array("B"), 1))
     )
   }
 
@@ -53,13 +53,13 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C")), 1)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A"), 1),
-        FrequentItemSet(Array("A", "B"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C"), 1),
+        FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C"), 1),
-        FrequentItemSet(Array("B"), 1),
+        FrequentItemSet(Array("A"), 1),
         FrequentItemSet(Array("B", "C"), 1),
+        FrequentItemSet(Array("B"), 1),
         FrequentItemSet(Array("C"), 1)
       )
     )
@@ -69,21 +69,21 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A"), 1),
-        FrequentItemSet(Array("A", "B"), 1),
-        FrequentItemSet(Array("A", "B", "C"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C", "D"), 1),
+        FrequentItemSet(Array("A", "B", "C"), 1),
         FrequentItemSet(Array("A", "B", "D"), 1),
-        FrequentItemSet(Array("A", "C"), 1),
+        FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C", "D"), 1),
+        FrequentItemSet(Array("A", "C"), 1),
         FrequentItemSet(Array("A", "D"), 1),
-        FrequentItemSet(Array("B"), 1),
-        FrequentItemSet(Array("B", "C"), 1),
+        FrequentItemSet(Array("A"), 1),
         FrequentItemSet(Array("B", "C", "D"), 1),
+        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "D"), 1),
-        FrequentItemSet(Array("C"), 1),
+        FrequentItemSet(Array("B"), 1),
         FrequentItemSet(Array("C", "D"), 1),
+        FrequentItemSet(Array("C"), 1),
         FrequentItemSet(Array("D"), 1)
       )
     )
@@ -95,16 +95,16 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, minItemSetSize = 2)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A", "B"), 1),
-        FrequentItemSet(Array("A", "B", "C"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C", "D"), 1),
+        FrequentItemSet(Array("A", "B", "C"), 1),
         FrequentItemSet(Array("A", "B", "D"), 1),
-        FrequentItemSet(Array("A", "C"), 1),
+        FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C", "D"), 1),
+        FrequentItemSet(Array("A", "C"), 1),
         FrequentItemSet(Array("A", "D"), 1),
-        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "C", "D"), 1),
+        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "D"), 1),
         FrequentItemSet(Array("C", "D"), 1)
       )
@@ -117,9 +117,9 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, minItemSetSize = 3)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A", "B", "C"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C", "D"), 1),
+        FrequentItemSet(Array("A", "B", "C"), 1),
         FrequentItemSet(Array("A", "B", "D"), 1),
         FrequentItemSet(Array("A", "C", "D"), 1),
         FrequentItemSet(Array("B", "C", "D"), 1)
@@ -133,7 +133,7 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, minItemSetSize = 4)
 
     assert(
-      frequentItemSets.set === Set(FrequentItemSet(Array("A", "B", "C", "D"), 1))
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(FrequentItemSet(Array("A", "B", "C", "D"), 1))
     )
   }
 
@@ -143,20 +143,20 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, maxItemSetSize = 3)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A"), 1),
-        FrequentItemSet(Array("A", "B"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C"), 1),
         FrequentItemSet(Array("A", "B", "D"), 1),
-        FrequentItemSet(Array("A", "C"), 1),
+        FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C", "D"), 1),
+        FrequentItemSet(Array("A", "C"), 1),
         FrequentItemSet(Array("A", "D"), 1),
-        FrequentItemSet(Array("B"), 1),
-        FrequentItemSet(Array("B", "C"), 1),
+        FrequentItemSet(Array("A"), 1),
         FrequentItemSet(Array("B", "C", "D"), 1),
+        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "D"), 1),
-        FrequentItemSet(Array("C"), 1),
+        FrequentItemSet(Array("B"), 1),
         FrequentItemSet(Array("C", "D"), 1),
+        FrequentItemSet(Array("C"), 1),
         FrequentItemSet(Array("D"), 1)
       )
     )
@@ -168,17 +168,17 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, maxItemSetSize = 2)
 
     assert(
-      frequentItemSets.set ===
-        Set(
-          FrequentItemSet(Array("A"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) ===
+        List(
           FrequentItemSet(Array("A", "B"), 1),
           FrequentItemSet(Array("A", "C"), 1),
           FrequentItemSet(Array("A", "D"), 1),
-          FrequentItemSet(Array("B"), 1),
+          FrequentItemSet(Array("A"), 1),
           FrequentItemSet(Array("B", "C"), 1),
           FrequentItemSet(Array("B", "D"), 1),
-          FrequentItemSet(Array("C"), 1),
+          FrequentItemSet(Array("B"), 1),
           FrequentItemSet(Array("C", "D"), 1),
+          FrequentItemSet(Array("C"), 1),
           FrequentItemSet(Array("D"), 1)
         )
     )
@@ -190,7 +190,7 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, maxItemSetSize = 1)
 
     assert(
-      frequentItemSets.set === Set(
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A"), 1),
         FrequentItemSet(Array("B"), 1),
         FrequentItemSet(Array("C"), 1),
@@ -205,15 +205,15 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, minItemSetSize = 2, maxItemSetSize = 3)
 
     assert(
-      frequentItemSets.set === Set(
-        FrequentItemSet(Array("A", "B"), 1),
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B", "C"), 1),
         FrequentItemSet(Array("A", "B", "D"), 1),
-        FrequentItemSet(Array("A", "C"), 1),
+        FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C", "D"), 1),
+        FrequentItemSet(Array("A", "C"), 1),
         FrequentItemSet(Array("A", "D"), 1),
-        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "C", "D"), 1),
+        FrequentItemSet(Array("B", "C"), 1),
         FrequentItemSet(Array("B", "D"), 1),
         FrequentItemSet(Array("C", "D"), 1)
       )
@@ -226,7 +226,7 @@ class FPGrowthTest extends FunSuite {
     val frequentItemSets = FPGrowth(Array(Array("A", "B", "C", "D")), 1, minItemSetSize = 2, maxItemSetSize = 2)
 
     assert(
-      frequentItemSets.set === Set(
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
         FrequentItemSet(Array("A", "B"), 1),
         FrequentItemSet(Array("A", "C"), 1),
         FrequentItemSet(Array("A", "D"), 1),
@@ -250,6 +250,21 @@ class FPGrowthTest extends FunSuite {
     )
 
     assert(frequentItemSets.size === 16777215)
+  }
+
+  test("Mining {{A, B}, {C, D}}") {
+    val frequentItemSets = FPGrowth(Array(Array("A", "B"), Array("C", "D")), 1)
+
+    assert(
+      frequentItemSets.items.map(_.toOrdered).sortBy(_.toString) === List(
+        FrequentItemSet(Array("A", "B"), 1),
+        FrequentItemSet(Array("A"), 1),
+        FrequentItemSet(Array("B"), 1),
+        FrequentItemSet(Array("C", "D"), 1),
+        FrequentItemSet(Array("C"), 1),
+        FrequentItemSet(Array("D"), 1)
+      )
+    )
   }
 
   test("Mining of T10I4D100K database with minFrequency = 5000 should return 10 frequent itemsets") {

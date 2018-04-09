@@ -44,12 +44,15 @@ case class FrequentItemSet[ItemType: ClassTag](items: Array[ItemType], frequency
 
   override def toString: String = s"{${items.mkString(", ")}}: $frequency"
 
-  override def hashCode(): Int = Objects.hash(Int.box(frequency), items.toSet)
+  override def hashCode(): Int = Objects.hash(Int.box(frequency), items)
 
   override def equals(obj: Any): Boolean =
     obj.isInstanceOf[FrequentItemSet[ItemType]] && obj
       .asInstanceOf[FrequentItemSet[ItemType]]
-      .frequency == frequency && obj.asInstanceOf[FrequentItemSet[ItemType]].items.toSet == items.toSet
+      .frequency == frequency && obj.asInstanceOf[FrequentItemSet[ItemType]].items.sameElements(items)
+
+  def toOrdered(implicit ordering: Ordering[ItemType]): FrequentItemSet[ItemType] =
+    FrequentItemSet(items.sorted, frequency)
 
 }
 
