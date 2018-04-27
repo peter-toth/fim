@@ -66,13 +66,13 @@ object FPGrowth {
 
     itemsets.foreach(fpTreeBuilder.add(_, 1))
 
-    val fPTree = fpTreeBuilder.tree
+    val fpTree = fpTreeBuilder.tree
 
     // scalastyle:off null
     fpTreeBuilder = null
     // scalastyle:on
 
-    mine[ItemType](fPTree,
+    mine[ItemType](fpTree,
                    minFrequency,
                    minItemSetSize,
                    maxItemSetSize,
@@ -94,7 +94,7 @@ object FPGrowth {
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
       accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
   ): accumulator.type = {
-    if (baseItemSet.nonEmpty && baseItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
+    if (baseItemSet.nonEmpty && baseItemSet.get.frequency > minFrequency && baseItemSet.get.size >= minItemSetSize && accumulator.size < maxNItemSets) {
       accumulator.add(baseItemSet.get)
     }
 

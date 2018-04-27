@@ -22,16 +22,17 @@ import ptoth.fim.{ FrequentItemSetAccumulator, FrequentItemSetUtils }
 @State(Scope.Benchmark)
 class FPGrowthT40I10D100KBenchmark {
 
-  var itemset: Array[Array[Int]] = _
+  var itemset: Array[Array[String]] = _
 
   @Setup
-  def setup(): Unit = itemset = FrequentItemSetUtils.readItemSetFile("data/T40I10D100K.dat")
+  def setup(): Unit = itemset = FrequentItemSetUtils.readItemSetFile("data/input/T40I10D100K.dat")
 
   @Benchmark
   @BenchmarkMode(Array(Mode.AverageTime))
   @Fork(3)
   @Warmup(iterations = 5)
   @Measurement(iterations = 5)
-  def measureFPGrowthT40I10D100K(): FrequentItemSetAccumulator[Int] = FPGrowthBenchmark.measureFPGrowth(itemset, 1000)
+  def measureFPGrowthT40I10D100K(): FrequentItemSetAccumulator[String] =
+    FPGrowthBenchmark.measureFPGrowth(itemset, 1000)
 
 }

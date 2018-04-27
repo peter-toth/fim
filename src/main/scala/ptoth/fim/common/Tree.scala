@@ -51,8 +51,23 @@ class Tree[HeaderType <: Header[_]](val headers: Array[HeaderType]) {
   var nItemSets: Int      = 0
   var height: Int         = 0
 
-  def isEmpty: Boolean = nNodes == 0
-  def isMaxHeight      = height == headers.length
+  def isEmpty: Boolean     = nNodes == 0
+  def isMaxHeight: Boolean = height == headers.length
+
+  /*def traverse(itemId: Int, processor: Array[Int] => Unit) = {
+    Iterator
+      .iterate(headers(itemId).node)(_.sibling)
+      .takeWhile(_ != null)
+      .foreach { node =>
+        val itemIdSet = Iterator
+          .iterate(node)(_.parent)
+          .takeWhile(_ != null)
+          .toArray
+          .sorted
+
+        processor(itemIdSet)
+      }
+  }*/
 
   override def toString: String =
     s"Tree(\n${headers.zipWithIndex

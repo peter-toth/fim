@@ -17,21 +17,22 @@
 package ptoth.fim.benchmarks
 
 import org.openjdk.jmh.annotations._
-import ptoth.fim.{ FrequentItemSetAccumulator, FrequentItemSetUtils }
+import ptoth.fim.FrequentItemSetAccumulator
+import ptoth.fim.FrequentItemSetUtils._
 
 @State(Scope.Benchmark)
 class FPGrowthT10I4D100KBenchmark {
 
-  var itemset: Array[Array[Int]] = _
+  var itemset: Array[Array[String]] = _
 
   @Setup
-  def setup(): Unit = itemset = FrequentItemSetUtils.readItemSetFile("data/T10I4D100K.dat")
+  def setup(): Unit = itemset = readItemSetFile("data/input/T10I4D100K.dat")
 
   @Benchmark
   @BenchmarkMode(Array(Mode.AverageTime))
   @Fork(3)
   @Warmup(iterations = 5)
   @Measurement(iterations = 5)
-  def measureFPGrowthT10I4D100K(): FrequentItemSetAccumulator[Int] = FPGrowthBenchmark.measureFPGrowth(itemset, 5000)
+  def measureFPGrowthT10I4D100K(): FrequentItemSetAccumulator[String] = FPGrowthBenchmark.measureFPGrowth(itemset, 5000)
 
 }

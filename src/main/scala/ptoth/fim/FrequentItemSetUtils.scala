@@ -21,11 +21,25 @@ import scala.io.Source
 
 object FrequentItemSetUtils {
 
-  def readItemSetFile(file: String): Array[Array[Int]] = {
-    val buffer = ListBuffer.empty[Array[Int]]
+  def ordered[ItemType: Ordering](frequentItemSets: Seq[FrequentItemSet[ItemType]]): Seq[FrequentItemSet[ItemType]] =
+    frequentItemSets.map(_.toOrdered).sortBy(_.toString)
+
+  def readItemSetFile(file: String): Array[Array[String]] = {
+    val buffer = ListBuffer.empty[Array[String]]
     for (line <- Source.fromFile(file).getLines) {
       val items = line.split(' ')
-      buffer += items.map(_.toInt)
+      buffer += items
+    }
+
+    buffer.toArray
+  }
+
+  def readFrequentItemSetFile(file: String): Array[FrequentItemSet[String]] = {
+    val buffer = ListBuffer.empty[FrequentItemSet[String]]
+    for (line <- Source.fromFile(file).getLines) {
+      val itemsAndFrequency  = line.split(' ')
+      val (items, frequency) = itemsAndFrequency.splitAt(itemsAndFrequency.length - 1)
+      buffer += FrequentItemSet.empty[String].addItems(items, frequency(0).drop(1).dropRight(1).toInt)
     }
 
     buffer.toArray
