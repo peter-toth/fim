@@ -58,61 +58,50 @@ class MFIHeader extends Header[MFINode]
 
 object FPMax {
 
-  def apply[ItemType: ClassTag](
-      itemsets: Array[Array[ItemType]],
-      minFrequency: Int,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
-      accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
-  ): accumulator.type = {
+  def builder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int) =
+    new LeveledFPTreeBuilder(itemFrequencies, minFrequency)
+
+  def apply[ItemType: ClassTag](itemsets: Array[Array[ItemType]], minFrequency: Int): FPMax[ItemType] = {
     val itemFrequencies = mutable.Map.empty[ItemType, Int]
     itemsets.foreach(_.toSet[ItemType].foreach(item => itemFrequencies(item) = itemFrequencies.getOrElse(item, 0) + 1))
 
-    var fpTreeBuilder = new LeveledFPTreeBuilder(itemFrequencies, minFrequency)
+    var fpTreeBuilder = builder(itemFrequencies, minFrequency)
 
     itemsets.foreach(fpTreeBuilder.add(_, 1))
 
     val fpTree = fpTreeBuilder.tree
 
-    // scalastyle:off null
-    fpTreeBuilder = null
-    // scalastyle:on
-
-    mine[ItemType](fpTree,
-                   minFrequency,
-                   minItemSetSize,
-                   maxItemSetSize,
-                   maxNItemSets,
-                   enableParallel,
-                   baseItemSet,
-                   accumulator)
-
-    accumulator
+    new FPMax(fpTree, minFrequency)
   }
 
-  def mine[ItemType: ClassTag](
-      fpTree: Tree[LeveledFPTreeHeader[ItemType]],
-      minFrequency: Int,
+}
+
+class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], minFrequency: Int) {
+
+  def mineTo(
+      minFrequency: Int = this.minFrequency,
       minItemSetSize: Int = 1,
       maxItemSetSize: Int = 0,
       maxNItemSets: Int = 1000000,
       enableParallel: Boolean = true,
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
-      accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
+      accumulator: FrequentItemSetAccumulator[ItemType]
   ): accumulator.type = {
+    if (minFrequency < this.minFrequency)
+      throw new Exception(s"minFrequency can't be lower than the minFrequency of the input FPTree")
+
     if (fpTree.isEmpty) {
-      if (baseItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
-        accumulator.add(baseItemSet.get) // TODO: check base frequency
+      if (baseItemSet.nonEmpty && baseItemSet.get.frequency > minFrequency && baseItemSet.get.size >= minItemSetSize && accumulator.size < maxNItemSets) {
+        accumulator.add(baseItemSet.get)
       }
     } else {
+      // this encoder is only used to construct the appropriate number of headers, and pass the minFrequency to the
       val dummyEncoder = new ItemEncoder[Int] {
 
-        override val itemFrequencies: Array[(Int, Int)] = fpTree.headers.map(header => (0, header.frequency))
+        override val minFrequency: Int = FPMax.this.minFrequency
 
-        //private val itemToItemId = itemFrequencies.map(_._1).zipWithIndex.toMap
+        override val itemFrequencies: Array[(Int, Int)] =
+          fpTree.headers.map(_ /*header*/ => (0, 0 /*header.frequency*/ ))
 
         override def encodeItem(item: Int): Option[Int] = None
 
@@ -136,7 +125,23 @@ object FPMax {
     accumulator
   }
 
-  private def mine[ItemType: ClassTag](
+  def mine(
+      minFrequency: Int = this.minFrequency,
+      minItemSetSize: Int = 1,
+      maxItemSetSize: Int = 0,
+      maxNItemSets: Int = 1000000,
+      enableParallel: Boolean = true,
+      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
+  ): ListAccumulator[ItemType] =
+    mineTo(minFrequency,
+           minItemSetSize,
+           maxItemSetSize,
+           maxNItemSets,
+           enableParallel,
+           baseItemSet,
+           new ListAccumulator[ItemType])
+
+  private def mine(
       fpTree: Tree[LeveledFPTreeHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int,
@@ -290,7 +295,7 @@ object FPMax {
       .exists(subsetChecking(itemIdSet, itemIdSet.length - 1, _))
   }
 
-  private def mineMaximal[ItemType: ClassTag](
+  private def mineMaximal(
       baseItemSet: FrequentItemSet[ItemType],
       minItemSetSize: Int,
       maxNItemSets: Int,

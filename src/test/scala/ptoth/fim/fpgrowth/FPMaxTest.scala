@@ -18,37 +18,37 @@ package ptoth.fim.FPMax
 
 import org.scalatest.FunSuite
 import ptoth.fim.fpgrowth.FPMax
-import ptoth.fim.FrequentItemSet
+import ptoth.fim.{ FrequentItemSet }
 import ptoth.fim.FrequentItemSetUtils._
 
 class FPMaxTest extends FunSuite {
 
   test("Mining of {}") {
-    val frequentItemSets = FPMax(Array.empty[Array[String]], 1)
+    val frequentItemSets = FPMax(Array.empty[Array[String]], 1).mine()
 
     assert(frequentItemSets.size === 0)
   }
 
   test("Mining of {{A}}") {
-    val frequentItemSets = FPMax(Array(Array("A")), 1)
+    val frequentItemSets = FPMax(Array(Array("A")), 1).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A"), 1))))
   }
 
   test("Mining of {{A, B}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B")), 1).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A", "B"), 1))))
   }
 
   test("Mining of {{A, B, C}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B", "C")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B", "C")), 1).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A", "B", "C"), 1))))
   }
 
   test("Mining of a {{A}, {B}}") {
-    val frequentItemSets = FPMax(Array(Array("A"), Array("B")), 1)
+    val frequentItemSets = FPMax(Array(Array("A"), Array("B")), 1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A"), 1), FrequentItemSet(Array("B"), 1)))
@@ -56,19 +56,19 @@ class FPMaxTest extends FunSuite {
   }
 
   test("Mining of a {{A, B}, {A}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A")), 1).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A", "B"), 1))))
   }
 
   test("Mining of a {{A, B}, {A, B}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B")), 1).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A", "B"), 2))))
   }
 
   test("Mining of a {{A, B}, {C}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("C")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("C")), 1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -78,7 +78,7 @@ class FPMaxTest extends FunSuite {
   }
 
   test("Mining of a {{A, B}, {A, B}, {A}, {C}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B"), Array("A"), Array("C")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B"), Array("A"), Array("C")), 1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -88,7 +88,7 @@ class FPMaxTest extends FunSuite {
   }
 
   test("Mining of a {{A, B}, {A, B}, {A, C}}") {
-    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B"), Array("A", "C")), 1)
+    val frequentItemSets = FPMax(Array(Array("A", "B"), Array("A", "B"), Array("A", "C")), 1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -99,7 +99,7 @@ class FPMaxTest extends FunSuite {
 
   test("Mining of a {{A, B, C}, {A, B}, {A}, {A}, {C}, {C}") {
     val frequentItemSets =
-      FPMax(Array(Array("A", "B", "C"), Array("A", "B"), Array("A"), Array("A"), Array("C"), Array("C")), 1)
+      FPMax(Array(Array("A", "B", "C"), Array("A", "B"), Array("A"), Array("A"), Array("C"), Array("C")), 1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -116,7 +116,7 @@ class FPMaxTest extends FunSuite {
                   Array("A", "D"),
                   Array("C", "E"),
                   Array("C", "E")),
-            1)
+            1).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -130,7 +130,7 @@ class FPMaxTest extends FunSuite {
   test("Mining of T10I4D100K database with minFrequency = 500") {
     val itemset                  = readItemSetFile("data/input/T10I4D100K.dat")
     val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T10I4D100K_fpm_mf-500.dat")
-    val frequentItemSets         = FPMax(itemset, 500)
+    val frequentItemSets         = FPMax(itemset, 500).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
   }
@@ -138,7 +138,7 @@ class FPMaxTest extends FunSuite {
   test("Mining of T10I4D100K database with minFrequency = 750") {
     val itemset                  = readItemSetFile("data/input/T10I4D100K.dat")
     val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T10I4D100K_fpm_mf-750.dat")
-    val frequentItemSets         = FPMax(itemset, 750)
+    val frequentItemSets         = FPMax(itemset, 750).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
   }
@@ -146,7 +146,7 @@ class FPMaxTest extends FunSuite {
   test("Mining of T40I10D100K database with minFrequency = 1000") {
     val itemset                  = readItemSetFile("data/input/T40I10D100K.dat")
     val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T40I10D100K_fpm_mf-1000.dat")
-    val frequentItemSets         = FPMax(itemset, 1000)
+    val frequentItemSets         = FPMax(itemset, 1000).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
   }

@@ -18,6 +18,7 @@ package ptoth.fim.common
 
 trait ItemEncoder[ItemType] {
 
+  def minFrequency: Int
   def itemFrequencies: Array[(ItemType, Int)]
   def encodeItem(item: ItemType): Option[Int]
   def encodeItems(itemset: Array[ItemType]): Array[Int] = itemset.flatMap(encodeItem).distinct.sorted
