@@ -60,4 +60,22 @@ object FrequentItemSet {
 
   def empty[ItemType: ClassTag]: FrequentItemSet[ItemType] = FrequentItemSet(Array.empty[ItemType], 0)
 
+  implicit def frequentItemSetOrdering[ItemType: Ordering]: Ordering[FrequentItemSet[ItemType]] =
+    (x: FrequentItemSet[ItemType], y: FrequentItemSet[ItemType]) => {
+      val sizeDiff = x.size - y.size
+      if (sizeDiff == 0) {
+        val frequencyDiff = x.frequency - y.frequency
+        if (frequencyDiff == 0) {
+          x.items.indices
+            .find(i => x.items(i) != y.items(i))
+            .map(i => implicitly[Ordering[ItemType]].compare(x.items(i), y.items(i)))
+            .getOrElse(0)
+        } else {
+          frequencyDiff
+        }
+      } else {
+        sizeDiff
+      }
+    }
+
 }
