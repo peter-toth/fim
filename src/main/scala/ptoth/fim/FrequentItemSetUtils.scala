@@ -16,6 +16,9 @@
 
 package ptoth.fim
 
+import java.io.FileInputStream
+import java.util.zip.GZIPInputStream
+
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
@@ -24,9 +27,11 @@ object FrequentItemSetUtils {
   def ordered[ItemType: Ordering](frequentItemSets: Seq[FrequentItemSet[ItemType]]): Seq[FrequentItemSet[ItemType]] =
     frequentItemSets.map(_.toOrdered).sortBy(_.toString)
 
-  def readItemSetFile(file: String): Array[Array[String]] = {
+  def readItemSetFile(file: String, compressed: Boolean = true): Array[Array[String]] = {
     val buffer = ListBuffer.empty[Array[String]]
-    for (line <- Source.fromFile(file).getLines) {
+    val source =
+      if (compressed) Source.fromInputStream(new GZIPInputStream(new FileInputStream(file))) else Source.fromFile(file)
+    for (line <- source.getLines) {
       val items = line.split(' ')
       buffer += items
     }
@@ -34,9 +39,11 @@ object FrequentItemSetUtils {
     buffer.toArray
   }
 
-  def readFrequentItemSetFile(file: String): Array[FrequentItemSet[String]] = {
+  def readFrequentItemSetFile(file: String, compressed: Boolean = true): Array[FrequentItemSet[String]] = {
     val buffer = ListBuffer.empty[FrequentItemSet[String]]
-    for (line <- Source.fromFile(file).getLines) {
+    val source =
+      if (compressed) Source.fromInputStream(new GZIPInputStream(new FileInputStream(file))) else Source.fromFile(file)
+    for (line <- source.getLines) {
       val itemsAndFrequency  = line.split(' ')
       val (items, frequency) = itemsAndFrequency.splitAt(itemsAndFrequency.length - 1)
       buffer += FrequentItemSet.empty[String].addItems(items, frequency(0).drop(1).dropRight(1).toInt)
