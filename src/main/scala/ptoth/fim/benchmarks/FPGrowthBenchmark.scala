@@ -27,7 +27,7 @@ object FPGrowthBenchmark {
                                           minFrequency: Int): FrequentItemSetAccumulator[ItemType] = {
     val accumulator = CountingAccumulator[ItemType]()
 
-    FPGrowth(itemsets, minFrequency, accumulator = accumulator)
+    FPGrowth(itemsets, minFrequency).mineTo(accumulator = accumulator)
 
     accumulator
   }

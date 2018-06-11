@@ -58,7 +58,8 @@ class MFIHeader extends Header[MFINode]
 
 object FPMax {
 
-  def builder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int) =
+  def builder[ItemType](itemFrequencies: collection.Map[ItemType, Int],
+                        minFrequency: Int): LeveledFPTreeBuilder[ItemType] =
     new LeveledFPTreeBuilder(itemFrequencies, minFrequency)
 
   def apply[ItemType: ClassTag](itemsets: Array[Array[ItemType]], minFrequency: Int): FPMax[ItemType] = {
@@ -70,6 +71,10 @@ object FPMax {
     itemsets.foreach(fpTreeBuilder.add(_, 1))
 
     val fpTree = fpTreeBuilder.tree
+
+    // scalastyle:off null
+    fpTreeBuilder = null
+    // scalastyle:on
 
     new FPMax(fpTree, minFrequency)
   }
@@ -310,11 +315,11 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
     var currentItemIdEncoder = itemIdEncoder
     var currentItemSet       = itemSet
     mfiTreeBuilders.foreach {
-      case (mfiTreeBuilder, fpTree, itemId) =>
+      case (mfiTreeBuilder, conditionalFPTree, itemId) =>
         currentItemIdSet = itemId +: currentItemIdSet.flatMap(currentItemIdEncoder.decodeItem)
         mfiTreeBuilder.addEncoded(currentItemIdSet.toArray.sorted, null)
         currentItemIdEncoder = mfiTreeBuilder.itemEncoder
-        currentItemSet +:= fpTree.headers(itemId).item
+        currentItemSet +:= conditionalFPTree.headers(itemId).item
     }
 
     val frequentItemSet = baseItemSet.addItems(currentItemSet.toArray, frequency)

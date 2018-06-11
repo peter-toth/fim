@@ -49,20 +49,14 @@ class FPTreeBuilder[ItemType](itemFrequencies: collection.Map[ItemType, Int], mi
 
 object FPGrowth {
 
-  def apply[ItemType: ClassTag](
-      itemsets: Array[Array[ItemType]],
-      minFrequency: Int,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
-      accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
-  ): accumulator.type = {
+  def builder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int): FPTreeBuilder[ItemType] =
+    new FPTreeBuilder(itemFrequencies, minFrequency)
+
+  def apply[ItemType: ClassTag](itemsets: Array[Array[ItemType]], minFrequency: Int): FPGrowth[ItemType] = {
     val itemFrequencies = mutable.Map.empty[ItemType, Int]
     itemsets.foreach(_.toSet[ItemType].foreach(item => itemFrequencies(item) = itemFrequencies.getOrElse(item, 0) + 1))
 
-    var fpTreeBuilder = new FPTreeBuilder(itemFrequencies, minFrequency)
+    var fpTreeBuilder = builder(itemFrequencies, minFrequency)
 
     itemsets.foreach(fpTreeBuilder.add(_, 1))
 
@@ -72,21 +66,15 @@ object FPGrowth {
     fpTreeBuilder = null
     // scalastyle:on
 
-    mine[ItemType](fpTree,
-                   minFrequency,
-                   minItemSetSize,
-                   maxItemSetSize,
-                   maxNItemSets,
-                   enableParallel,
-                   baseItemSet,
-                   accumulator)
-
-    accumulator
+    new FPGrowth(fpTree, minFrequency)
   }
 
-  def mine[ItemType: ClassTag](
-      fpTree: Tree[FPTreeHeader[ItemType]],
-      minFrequency: Int,
+}
+
+class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFrequency: Int) {
+
+  def mineTo(
+      minFrequency: Int = this.minFrequency,
       minItemSetSize: Int = 1,
       maxItemSetSize: Int = 0,
       maxNItemSets: Int = 1000000,
@@ -94,6 +82,9 @@ object FPGrowth {
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
       accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
   ): accumulator.type = {
+    if (minFrequency < this.minFrequency)
+      throw new Exception(s"minFrequency can't be lower than the minFrequency of the input FPTree")
+
     if (baseItemSet.nonEmpty && baseItemSet.get.frequency > minFrequency && baseItemSet.get.size >= minItemSetSize && accumulator.size < maxNItemSets) {
       accumulator.add(baseItemSet.get)
     }
@@ -110,7 +101,23 @@ object FPGrowth {
     accumulator
   }
 
-  private def mine[ItemType: ClassTag](
+  def mine(
+      minFrequency: Int = this.minFrequency,
+      minItemSetSize: Int = 1,
+      maxItemSetSize: Int = 0,
+      maxNItemSets: Int = 1000000,
+      enableParallel: Boolean = true,
+      baseItemSet: Option[FrequentItemSet[ItemType]] = None
+  ): ListAccumulator[ItemType] =
+    mineTo(minFrequency,
+           minItemSetSize,
+           maxItemSetSize,
+           maxNItemSets,
+           enableParallel,
+           baseItemSet,
+           new ListAccumulator[ItemType])
+
+  private def mine(
       fpTree: Tree[FPTreeHeader[ItemType]],
       minFrequency: Int,
       minItemSetSize: Int,
@@ -220,7 +227,7 @@ object FPGrowth {
       }
     }
 
-  private def mineSinglePath[ItemType: ClassTag](
+  private def mineSinglePath(
       node: FPNode,
       height: Int,
       headers: Array[FPTreeHeader[ItemType]],
