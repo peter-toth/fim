@@ -24,8 +24,10 @@ import scala.io.Source
 
 object FrequentItemSetUtils {
 
-  def ordered[ItemType: Ordering](frequentItemSets: Seq[FrequentItemSet[ItemType]]): Seq[FrequentItemSet[ItemType]] =
-    frequentItemSets.map(_.toOrdered).sortBy(_.toString)
+  def ordered[ItemType: Ordering](
+      frequentItemSets: Seq[FrequentItemSet[ItemType]]
+  )(implicit ord: Ordering[FrequentItemSet[ItemType]]): Seq[FrequentItemSet[ItemType]] =
+    frequentItemSets.map(_.toOrdered).sorted
 
   def readItemSetFile(file: String, compressed: Boolean = true): Array[Array[String]] = {
     val buffer = ListBuffer.empty[Array[String]]

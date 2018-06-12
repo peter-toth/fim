@@ -30,6 +30,7 @@ class LeveledFPTreeHeader[ItemType](override val item: ItemType, override val fr
   override def prepend(node: FPNode, level: Int): Unit =
     if (this.node == null || level > this.level) {
       super.prepend(node, level)
+      this.level = level
     } else {
       node.sibling = this.node.sibling
       this.node.sibling = node
@@ -316,8 +317,9 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
     var currentItemSet       = itemSet
     mfiTreeBuilders.foreach {
       case (mfiTreeBuilder, conditionalFPTree, itemId) =>
-        currentItemIdSet = itemId +: currentItemIdSet.flatMap(currentItemIdEncoder.decodeItem)
-        mfiTreeBuilder.addEncoded(currentItemIdSet.toArray.sorted, null)
+        val decodedCurrentItemIdSet = currentItemIdSet.flatMap(currentItemIdEncoder.decodeItem)
+        mfiTreeBuilder.addEncoded(decodedCurrentItemIdSet.toArray.sorted, null)
+        currentItemIdSet = itemId +: decodedCurrentItemIdSet
         currentItemIdEncoder = mfiTreeBuilder.itemEncoder
         currentItemSet +:= conditionalFPTree.headers(itemId).item
     }
