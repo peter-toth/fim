@@ -137,7 +137,7 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
           mineSinglePath(header.node,
                          header.node.height,
                          fpTree.headers,
-                         header.frequency,
+                         None,
                          minItemSetSize,
                          maxItemSetSize,
                          maxNItemSets,
@@ -159,7 +159,7 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
                   header.node.parent,
                   header.node.parent.height,
                   fpTree.headers,
-                  header.frequency,
+                  Some(header.frequency),
                   minItemSetSize,
                   maxItemSetSize,
                   maxNItemSets,
@@ -231,7 +231,7 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
       node: FPNode,
       height: Int,
       headers: Array[FPTreeHeader[ItemType]],
-      frequency: Int,
+      baseFrequency: Option[Int],
       minItemSetSize: Int,
       maxItemSetSize: Int,
       maxNItemSets: Int,
@@ -245,7 +245,9 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
       // at most this level of ancestor nodes of header.node can be the startNode to satisfy minItemSetSize
       var currentNode = node
       Iterator.range(1, height - 0.max(minItemSetSize - baseItemSet.size - 1) + 1).foreach { level =>
-        val frequentItemSet = baseItemSet.addItem(headers(currentNode.itemId).item, frequency)
+        val frequency = baseFrequency.orElse(Some(currentNode.frequency))
+        val frequentItemSet =
+          baseItemSet.addItem(headers(currentNode.itemId).item, frequency.get)
         if (frequentItemSet.size >= minItemSetSize && accumulator.size < maxNItemSets) {
           accumulator.add(frequentItemSet)
         }
