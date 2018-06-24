@@ -70,7 +70,7 @@ class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: He
     if (!itemIdSet.isEmpty) {
       val (nNodes, split) = builderNode.add(itemIdSet, 0, tree.headers, data, nodeCreator)
       tree.nNodes += nNodes
-      tree.singlePath &= !split
+      tree.isSinglePath &= !split
       tree.nItemSets += 1
       tree.height = tree.height.max(itemIdSet.length)
     }

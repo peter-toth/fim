@@ -128,14 +128,6 @@ class FPMaxTest extends FunSuite {
     )
   }
 
-  test("Mining of T10I4D100K database with minFrequency = 100") {
-    val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
-    val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T10I4D100K_fpm_mf-100.dat.gz")
-    val frequentItemSets         = FPMax(itemset, 100).mine()
-
-    assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
-  }
-
   test("Mining of T10I4D100K database") {
     forAll(List(5000, 1000, 500, 100)) { mf =>
       val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
@@ -155,5 +147,13 @@ class FPMaxTest extends FunSuite {
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }
   }
+
+//  test("Mining of T10I4D100K database with minFrequency = 100") {
+//    val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
+//    val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T10I4D100K_fpm_mf-100.dat.gz")
+//    val frequentItemSets         = FPMax(itemset, 100).mine()
+//
+//    assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
+//  }
 
 }

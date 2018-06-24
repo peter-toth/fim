@@ -28,8 +28,7 @@ class FPNode(override val itemId: Int, override val parent: FPNode) extends Node
 
   var frequency: Int = 0
 
-  override def update(data: DataType): Unit =
-    frequency += data
+  override def update(data: DataType): Unit = frequency += data
 
 }
 
@@ -82,8 +81,9 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
       baseItemSet: Option[FrequentItemSet[ItemType]] = None,
       accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
   ): accumulator.type = {
-    if (minFrequency < this.minFrequency)
+    if (minFrequency < this.minFrequency) {
       throw new Exception(s"minFrequency can't be lower than the minFrequency of the input FPTree")
+    }
 
     if (baseItemSet.nonEmpty && baseItemSet.get.frequency > minFrequency && baseItemSet.get.size >= minItemSetSize && accumulator.size < maxNItemSets) {
       accumulator.add(baseItemSet.get)
@@ -131,7 +131,7 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
       //val parallel = fpTree.nNodes > 20 && enableParallel
 
       if (!fpTree.isEmpty) {
-        if (fpTree.singlePath) {
+        if (fpTree.isSinglePath) {
           val header = fpTree.headers.last
 
           mineSinglePath(header.node,

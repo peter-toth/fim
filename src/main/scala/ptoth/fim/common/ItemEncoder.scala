@@ -42,7 +42,7 @@ case class MapEncoder[ItemType](allItemFrequencies: collection.Map[ItemType, Int
 case class ContinuousArrayEncoder(allItemFrequencies: Array[Int], minFrequency: Int) extends ItemEncoder[Int] {
 
   override val itemFrequencies: Array[(Int, Int)] =
-    allItemFrequencies.zipWithIndex.map(_.swap).filter(_._2 >= minFrequency).sortBy(-_._2)
+    allItemFrequencies.zipWithIndex.filter(_._1 >= minFrequency).sortBy(-_._1).map(_.swap)
 
   private val itemToItemId = {
     val a = Array.fill(allItemFrequencies.length)(-1)

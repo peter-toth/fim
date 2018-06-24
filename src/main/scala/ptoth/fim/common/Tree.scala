@@ -46,10 +46,10 @@ class Header[NodeType <: Node[NodeType]] {
 
 class Tree[HeaderType <: Header[_]](val headers: Array[HeaderType]) {
 
-  var nNodes: Int         = 0
-  var singlePath: Boolean = true
-  var nItemSets: Int      = 0
-  var height: Int         = 0
+  var nNodes: Int           = 0
+  var isSinglePath: Boolean = true
+  var nItemSets: Int        = 0
+  var height: Int           = 0
 
   def isEmpty: Boolean     = nNodes == 0
   def isMaxHeight: Boolean = height == headers.length
