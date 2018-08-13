@@ -47,6 +47,20 @@ class FPCloseTest extends FunSuite {
     assert(ordered(frequentItemSets.items) === ordered(List(FrequentItemSet(Array("A", "B", "C"), 1))))
   }
 
+  test("Mining of {{A, B, C}:2, {D}") {
+    val frequentItemSets = FPClose(Array(Array("A", "B", "C"), Array("A", "B", "C"), Array("D")), 1).mine()
+
+    assert(
+      ordered(frequentItemSets.items) ===
+        ordered(
+          List(
+            FrequentItemSet(Array("A", "B", "C"), 2),
+            FrequentItemSet(Array("D"), 1)
+          )
+        )
+    )
+  }
+
   test("Mining of a {{A}, {B}}") {
     val frequentItemSets = FPClose(Array(Array("A"), Array("B")), 1).mine()
 
@@ -107,10 +121,12 @@ class FPCloseTest extends FunSuite {
 
     assert(
       ordered(frequentItemSets.items) === ordered(
-        List(FrequentItemSet(Array("A", "B", "C"), 1),
-             FrequentItemSet(Array("A", "B"), 2),
-             FrequentItemSet(Array("A"), 4),
-             FrequentItemSet(Array("C"), 3))
+        List(
+          FrequentItemSet(Array("A", "B", "C"), 1),
+          FrequentItemSet(Array("A", "B"), 2),
+          FrequentItemSet(Array("A"), 4),
+          FrequentItemSet(Array("C"), 3)
+        )
       )
     )
   }
@@ -288,13 +304,17 @@ class FPCloseTest extends FunSuite {
 
   test("Mining of a {{A, B, C}, {A, B}, {A, D}, {A, D}, {C, E}, {C, E}") {
     val frequentItemSets =
-      FPClose(Array(Array("A", "B", "C"),
-                    Array("A", "B"),
-                    Array("A", "D"),
-                    Array("A", "D"),
-                    Array("C", "E"),
-                    Array("C", "E")),
-              1).mine()
+      FPClose(
+        Array(
+          Array("A", "B", "C"),
+          Array("A", "B"),
+          Array("A", "D"),
+          Array("A", "D"),
+          Array("C", "E"),
+          Array("C", "E")
+        ),
+        1
+      ).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
@@ -312,19 +332,19 @@ class FPCloseTest extends FunSuite {
 
   test("Mining of T10I4D100K database") {
     forAll(List(5000, 1000, 500, 100)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
+      val itemset = readItemSetFile("data/input/T10I4D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T10I4D100K_fpc_mf-$mf.dat.gz")
-      val frequentItemSets         = FPClose(itemset, mf).mine()
+      val frequentItemSets = FPClose(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }
   }
 
   test("Mining of T40I10D100K database") {
-    forAll(List(5000, 1000, 500)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T40I10D100K.dat.gz")
+    forAll(List(5000, 1000)) { mf =>
+      val itemset = readItemSetFile("data/input/T40I10D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T40I10D100K_fpc_mf-$mf.dat.gz")
-      val frequentItemSets         = FPClose(itemset, mf).mine()
+      val frequentItemSets = FPClose(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }

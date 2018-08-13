@@ -18,7 +18,7 @@ package ptoth.fim.fpgrowth
 
 import org.scalatest.FunSuite
 import org.scalatest.Inspectors.forAll
-import ptoth.fim.{ CountingAccumulator, FrequentItemSet }
+import ptoth.fim.{CountingAccumulator, FrequentItemSet}
 import ptoth.fim.FrequentItemSetUtils._
 
 class FPGrowthTest extends FunSuite {
@@ -289,18 +289,18 @@ class FPGrowthTest extends FunSuite {
   }
 
   test("Mining of T10I4D100K database with minFrequency = 100") {
-    val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
+    val itemset = readItemSetFile("data/input/T10I4D100K.dat.gz")
     val expectedFrequentItemsets = readFrequentItemSetFile("data/output/T10I4D100K_fpg_mf-100.dat.gz")
-    val frequentItemSets         = FPGrowth(itemset, 100).mine()
+    val frequentItemSets = FPGrowth(itemset, 100).mine()
 
     assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
   }
 
   test("Mining of T10I4D100K database") {
     forAll(List(5000, 1000, 500, 100)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
+      val itemset = readItemSetFile("data/input/T10I4D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T10I4D100K_fpg_mf-$mf.dat.gz")
-      val frequentItemSets         = FPGrowth(itemset, mf).mine()
+      val frequentItemSets = FPGrowth(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }
@@ -308,9 +308,9 @@ class FPGrowthTest extends FunSuite {
 
   test("Mining of T40I10D100K database") {
     forAll(List(5000, 1000, 500)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T40I10D100K.dat.gz")
+      val itemset = readItemSetFile("data/input/T40I10D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T40I10D100K_fpg_mf-$mf.dat.gz")
-      val frequentItemSets         = FPGrowth(itemset, mf).mine()
+      val frequentItemSets = FPGrowth(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }

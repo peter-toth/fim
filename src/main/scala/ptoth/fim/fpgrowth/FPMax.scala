@@ -16,14 +16,13 @@
 
 package ptoth.fim.fpgrowth
 
-import ptoth.fim.{ FrequentItemSet, _ }
+import ptoth.fim.{FrequentItemSet, _}
 import ptoth.fim.common._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-// TODO: shouldn't be a better name FPMaxTreeHeader?
-class LeveledFPTreeHeader[ItemType](override val item: ItemType, override val frequency: Int)
+class FPMaxTreeHeader[ItemType](override val item: ItemType, override val frequency: Int)
     extends FPTreeHeader(item, frequency) {
 
   var level = 0
@@ -39,10 +38,10 @@ class LeveledFPTreeHeader[ItemType](override val item: ItemType, override val fr
 
 }
 
-class LeveledFPTreeBuilder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int)
-    extends TreeBuilder[ItemType, FPNode, LeveledFPTreeHeader[ItemType]](
+class FPMaxTreeBuilder[ItemType](itemFrequencies: collection.Map[ItemType, Int], minFrequency: Int)
+    extends TreeBuilder[ItemType, FPNode, FPMaxTreeHeader[ItemType]](
       MapEncoder(itemFrequencies, minFrequency),
-      (_, item, frequency) => new LeveledFPTreeHeader(item, frequency),
+      (_, item, frequency) => new FPMaxTreeHeader(item, frequency),
       (itemId, parent) => new FPNode(itemId, parent)
     )
 
@@ -60,9 +59,11 @@ class MFIHeader extends Header[MFINode]
 
 object FPMax {
 
-  def builder[ItemType](itemFrequencies: collection.Map[ItemType, Int],
-                        minFrequency: Int): LeveledFPTreeBuilder[ItemType] =
-    new LeveledFPTreeBuilder(itemFrequencies, minFrequency)
+  def builder[ItemType](
+    itemFrequencies: collection.Map[ItemType, Int],
+    minFrequency: Int
+  ): FPMaxTreeBuilder[ItemType] =
+    new FPMaxTreeBuilder(itemFrequencies, minFrequency)
 
   def apply[ItemType: ClassTag](itemsets: Array[Array[ItemType]], minFrequency: Int): FPMax[ItemType] = {
     val itemFrequencies = mutable.Map.empty[ItemType, Int]
@@ -83,16 +84,16 @@ object FPMax {
 
 }
 
-class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], minFrequency: Int) {
+class FPMax[ItemType: ClassTag](fpTree: Tree[FPMaxTreeHeader[ItemType]], minFrequency: Int) {
 
   def mineTo(
-      minFrequency: Int = this.minFrequency,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
-      accumulator: FrequentItemSetAccumulator[ItemType]
+    minFrequency: Int = this.minFrequency,
+    minItemSetSize: Int = 1,
+    maxItemSetSize: Int = 0,
+    maxNItemSets: Int = 1000000,
+    enableParallel: Boolean = true,
+    baseItemSet: Option[FrequentItemSet[ItemType]] = None,
+    accumulator: FrequentItemSetAccumulator[ItemType]
   ): accumulator.type = {
     if (minFrequency < this.minFrequency)
       throw new Exception(s"minFrequency can't be lower than the minFrequency of the input FPTree")
@@ -134,47 +135,51 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
   }
 
   def mine(
-      minFrequency: Int = this.minFrequency,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
+    minFrequency: Int = this.minFrequency,
+    minItemSetSize: Int = 1,
+    maxItemSetSize: Int = 0,
+    maxNItemSets: Int = 1000000,
+    enableParallel: Boolean = true,
+    baseItemSet: Option[FrequentItemSet[ItemType]] = None,
   ): ListAccumulator[ItemType] =
-    mineTo(minFrequency,
-           minItemSetSize,
-           maxItemSetSize,
-           maxNItemSets,
-           enableParallel,
-           baseItemSet,
-           new ListAccumulator[ItemType])
+    mineTo(
+      minFrequency,
+      minItemSetSize,
+      maxItemSetSize,
+      maxNItemSets,
+      enableParallel,
+      baseItemSet,
+      new ListAccumulator[ItemType]
+    )
 
   private def mine(
-      fpTree: Tree[LeveledFPTreeHeader[ItemType]],
-      minFrequency: Int,
-      minItemSetSize: Int,
-      maxItemSetSize: Int,
-      maxNItemSets: Int,
-      enableParallel: Boolean,
-      baseItemSet: FrequentItemSet[ItemType],
-      frequency: Int,
-      itemIdEncoder: ItemEncoder[Int],
-      mfiTreeBuilders: Seq[(TreeBuilder[Int, MFINode, MFIHeader], Tree[LeveledFPTreeHeader[ItemType]], Int)],
-      accumulator: FrequentItemSetAccumulator[ItemType]
+    fpTree: Tree[FPMaxTreeHeader[ItemType]],
+    minFrequency: Int,
+    minItemSetSize: Int,
+    maxItemSetSize: Int,
+    maxNItemSets: Int,
+    enableParallel: Boolean,
+    baseItemSet: FrequentItemSet[ItemType],
+    frequency: Int,
+    itemIdEncoder: ItemEncoder[Int],
+    mfiTreeBuilders: Seq[(TreeBuilder[Int, MFINode, MFIHeader], Tree[FPMaxTreeHeader[ItemType]], Int)],
+    accumulator: FrequentItemSetAccumulator[ItemType]
   ): Unit =
     if (maxItemSetSize == 0 || baseItemSet.size < maxItemSetSize) {
       //val parallel = fpTree.nNodes > 20 && enableParallel
 
       if (fpTree.isEmpty) {
-        mineMaximal(baseItemSet,
-                    minItemSetSize,
-                    maxNItemSets,
-                    itemIdEncoder,
-                    mfiTreeBuilders,
-                    Seq.empty,
-                    Seq.empty,
-                    frequency,
-                    accumulator)
+        mineMaximal(
+          baseItemSet,
+          minItemSetSize,
+          maxNItemSets,
+          itemIdEncoder,
+          mfiTreeBuilders,
+          Seq.empty,
+          Seq.empty,
+          frequency,
+          accumulator
+        )
       } else if (fpTree.isMaxHeight && fpTree.headers.last.node.frequency >= minFrequency) {
         mineMaximal(
           baseItemSet,
@@ -188,9 +193,11 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
           accumulator
         )
       } else {
-        val mfiTreeBuilder = new TreeBuilder[Int, MFINode, MFIHeader](itemIdEncoder,
-                                                                      (_, _, _) => new MFIHeader,
-                                                                      (itemId, parent) => new MFINode(itemId, parent))
+        val mfiTreeBuilder = new TreeBuilder[Int, MFINode, MFIHeader](
+          itemIdEncoder,
+          (_, _, _) => new MFIHeader,
+          (itemId, parent) => new MFINode(itemId, parent)
+        )
 
         if (mfiTreeBuilders.nonEmpty) {
           val (prevMFITreeBuilder, _, prevItemId) = mfiTreeBuilders.head
@@ -237,9 +244,9 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
 
             if (!maximalityChecking(tail, mfiTreeBuilder.tree)) {
               var conditionalFPTreeBuilder =
-                new TreeBuilder[Int, FPNode, LeveledFPTreeHeader[ItemType]](
+                new TreeBuilder[Int, FPNode, FPMaxTreeHeader[ItemType]](
                   conditionalItemIdEncoder,
-                  (_, itemId, frequency) => new LeveledFPTreeHeader(fpTree.headers(itemId).item, frequency),
+                  (_, itemId, frequency) => new FPMaxTreeHeader(fpTree.headers(itemId).item, frequency),
                   (itemId, parent) => new FPNode(itemId, parent)
                 )
               Iterator
@@ -276,7 +283,8 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
                 accumulator
               )
 
-              prune = !conditionalFPTree.isEmpty && conditionalFPTree.height == itemId &&
+              prune = !conditionalFPTree.isEmpty &&
+              conditionalFPTree.height == itemId &&
               conditionalFPTree.headers.last.node.frequency >= minFrequency
             }
           }
@@ -305,19 +313,19 @@ class FPMax[ItemType: ClassTag](fpTree: Tree[LeveledFPTreeHeader[ItemType]], min
   }
 
   private def mineMaximal(
-      baseItemSet: FrequentItemSet[ItemType],
-      minItemSetSize: Int,
-      maxNItemSets: Int,
-      itemIdEncoder: ItemEncoder[Int],
-      mfiTreeBuilders: Seq[(TreeBuilder[Int, MFINode, MFIHeader], Tree[LeveledFPTreeHeader[ItemType]], Int)],
-      itemSet: Seq[ItemType],
-      itemIdSet: Seq[Int],
-      frequency: Int,
-      accumulator: FrequentItemSetAccumulator[ItemType]
+    baseItemSet: FrequentItemSet[ItemType],
+    minItemSetSize: Int,
+    maxNItemSets: Int,
+    itemIdEncoder: ItemEncoder[Int],
+    mfiTreeBuilders: Seq[(TreeBuilder[Int, MFINode, MFIHeader], Tree[FPMaxTreeHeader[ItemType]], Int)],
+    itemSet: Seq[ItemType],
+    itemIdSet: Seq[Int],
+    frequency: Int,
+    accumulator: FrequentItemSetAccumulator[ItemType]
   ) {
-    var currentItemIdSet     = itemIdSet
+    var currentItemIdSet = itemIdSet
     var currentItemIdEncoder = itemIdEncoder
-    var currentItemSet       = itemSet
+    var currentItemSet = itemSet
     mfiTreeBuilders.foreach {
       case (mfiTreeBuilder, conditionalFPTree, itemId) =>
         val decodedCurrentItemIdSet = currentItemIdSet.flatMap(currentItemIdEncoder.decodeItem)

@@ -17,14 +17,16 @@
 package ptoth.fim.benchmarks
 
 import ptoth.fim.fpgrowth.FPGrowth
-import ptoth.fim.{ CountingAccumulator, FrequentItemSetAccumulator }
+import ptoth.fim.{CountingAccumulator, FrequentItemSetAccumulator}
 
 import scala.reflect.ClassTag
 
 object FPGrowthBenchmark {
 
-  def measureFPGrowth[ItemType: ClassTag](itemsets: Array[Array[ItemType]],
-                                          minFrequency: Int): FrequentItemSetAccumulator[ItemType] = {
+  def measureFPGrowth[ItemType: ClassTag](
+    itemsets: Array[Array[ItemType]],
+    minFrequency: Int
+  ): FrequentItemSetAccumulator[ItemType] = {
     val accumulator = CountingAccumulator[ItemType]()
 
     FPGrowth(itemsets, minFrequency).mineTo(accumulator = accumulator)

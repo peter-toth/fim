@@ -73,13 +73,13 @@ object FPGrowth {
 class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFrequency: Int) {
 
   def mineTo(
-      minFrequency: Int = this.minFrequency,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None,
-      accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
+    minFrequency: Int = this.minFrequency,
+    minItemSetSize: Int = 1,
+    maxItemSetSize: Int = 0,
+    maxNItemSets: Int = 1000000,
+    enableParallel: Boolean = true,
+    baseItemSet: Option[FrequentItemSet[ItemType]] = None,
+    accumulator: FrequentItemSetAccumulator[ItemType] = ListAccumulator[ItemType]()
   ): accumulator.type = {
     if (minFrequency < this.minFrequency) {
       throw new Exception(s"minFrequency can't be lower than the minFrequency of the input FPTree")
@@ -89,43 +89,47 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
       accumulator.add(baseItemSet.get)
     }
 
-    mine(fpTree,
-         minFrequency,
-         minItemSetSize,
-         maxItemSetSize,
-         maxNItemSets,
-         enableParallel,
-         baseItemSet.getOrElse(FrequentItemSet.empty),
-         accumulator)
+    mine(
+      fpTree,
+      minFrequency,
+      minItemSetSize,
+      maxItemSetSize,
+      maxNItemSets,
+      enableParallel,
+      baseItemSet.getOrElse(FrequentItemSet.empty),
+      accumulator
+    )
 
     accumulator
   }
 
   def mine(
-      minFrequency: Int = this.minFrequency,
-      minItemSetSize: Int = 1,
-      maxItemSetSize: Int = 0,
-      maxNItemSets: Int = 1000000,
-      enableParallel: Boolean = true,
-      baseItemSet: Option[FrequentItemSet[ItemType]] = None
+    minFrequency: Int = this.minFrequency,
+    minItemSetSize: Int = 1,
+    maxItemSetSize: Int = 0,
+    maxNItemSets: Int = 1000000,
+    enableParallel: Boolean = true,
+    baseItemSet: Option[FrequentItemSet[ItemType]] = None
   ): ListAccumulator[ItemType] =
-    mineTo(minFrequency,
-           minItemSetSize,
-           maxItemSetSize,
-           maxNItemSets,
-           enableParallel,
-           baseItemSet,
-           new ListAccumulator[ItemType])
+    mineTo(
+      minFrequency,
+      minItemSetSize,
+      maxItemSetSize,
+      maxNItemSets,
+      enableParallel,
+      baseItemSet,
+      new ListAccumulator[ItemType]
+    )
 
   private def mine(
-      fpTree: Tree[FPTreeHeader[ItemType]],
-      minFrequency: Int,
-      minItemSetSize: Int,
-      maxItemSetSize: Int,
-      maxNItemSets: Int,
-      enableParallel: Boolean,
-      baseItemSet: FrequentItemSet[ItemType],
-      accumulator: FrequentItemSetAccumulator[ItemType]
+    fpTree: Tree[FPTreeHeader[ItemType]],
+    minFrequency: Int,
+    minItemSetSize: Int,
+    maxItemSetSize: Int,
+    maxNItemSets: Int,
+    enableParallel: Boolean,
+    baseItemSet: FrequentItemSet[ItemType],
+    accumulator: FrequentItemSetAccumulator[ItemType]
   ): Unit =
     if (maxItemSetSize == 0 || baseItemSet.size < maxItemSetSize) {
       //val parallel = fpTree.nNodes > 20 && enableParallel
@@ -134,16 +138,18 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
         if (fpTree.isSinglePath) {
           val header = fpTree.headers.last
 
-          mineSinglePath(header.node,
-                         header.node.height,
-                         fpTree.headers,
-                         None,
-                         minItemSetSize,
-                         maxItemSetSize,
-                         maxNItemSets,
-                         enableParallel,
-                         baseItemSet,
-                         accumulator)
+          mineSinglePath(
+            header.node,
+            header.node.height,
+            fpTree.headers,
+            None,
+            minItemSetSize,
+            maxItemSetSize,
+            maxNItemSets,
+            enableParallel,
+            baseItemSet,
+            accumulator
+          )
         } else {
           Iterator.range(0.max(minItemSetSize - baseItemSet.size - 1), fpTree.headers.length).foreach { itemId =>
             val header = fpTree.headers(itemId)
@@ -213,14 +219,16 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
               conditionalFPTreeBuilder = null
               // scalastyle:on
 
-              mine(conditionalFPTree,
-                   minFrequency,
-                   minItemSetSize,
-                   maxItemSetSize,
-                   maxNItemSets,
-                   enableParallel,
-                   frequentItemSet,
-                   accumulator)
+              mine(
+                conditionalFPTree,
+                minFrequency,
+                minItemSetSize,
+                maxItemSetSize,
+                maxNItemSets,
+                enableParallel,
+                frequentItemSet,
+                accumulator
+              )
             }
           }
         }
@@ -228,16 +236,16 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
     }
 
   private def mineSinglePath(
-      node: FPNode,
-      height: Int,
-      headers: Array[FPTreeHeader[ItemType]],
-      baseFrequency: Option[Int],
-      minItemSetSize: Int,
-      maxItemSetSize: Int,
-      maxNItemSets: Int,
-      enableParallel: Boolean,
-      baseItemSet: FrequentItemSet[ItemType],
-      accumulator: FrequentItemSetAccumulator[ItemType]
+    node: FPNode,
+    height: Int,
+    headers: Array[FPTreeHeader[ItemType]],
+    baseFrequency: Option[Int],
+    minItemSetSize: Int,
+    maxItemSetSize: Int,
+    maxNItemSets: Int,
+    enableParallel: Boolean,
+    baseItemSet: FrequentItemSet[ItemType],
+    accumulator: FrequentItemSetAccumulator[ItemType]
   ): Unit =
     if (maxItemSetSize == 0 || baseItemSet.size < maxItemSetSize) {
       //val parallel = fpTree.nNodes > 20 && enableParallel
@@ -254,16 +262,18 @@ class FPGrowth[ItemType: ClassTag](fpTree: Tree[FPTreeHeader[ItemType]], minFreq
 
         currentNode = currentNode.parent
 
-        mineSinglePath(currentNode,
-                       height - level,
-                       headers,
-                       frequency,
-                       minItemSetSize,
-                       maxItemSetSize,
-                       maxNItemSets,
-                       enableParallel,
-                       frequentItemSet,
-                       accumulator)
+        mineSinglePath(
+          currentNode,
+          height - level,
+          headers,
+          frequency,
+          minItemSetSize,
+          maxItemSetSize,
+          maxNItemSets,
+          enableParallel,
+          frequentItemSet,
+          accumulator
+        )
       }
     }
 

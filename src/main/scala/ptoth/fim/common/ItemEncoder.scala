@@ -22,6 +22,7 @@ trait ItemEncoder[ItemType] {
   def itemFrequencies: Array[(ItemType, Int)]
   def encodeItem(item: ItemType): Option[Int]
   def encodeItems(itemset: Array[ItemType]): Array[Int] = itemset.flatMap(encodeItem).distinct.sorted
+
   def decodeItem(itemId: Int): Option[ItemType] =
     if (itemId >= 0 && itemId < itemFrequencies.length) Some(itemFrequencies(itemId)._1) else None
 

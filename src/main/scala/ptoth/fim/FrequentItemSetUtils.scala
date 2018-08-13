@@ -25,7 +25,7 @@ import scala.io.Source
 object FrequentItemSetUtils {
 
   def ordered[ItemType: Ordering](
-      frequentItemSets: Seq[FrequentItemSet[ItemType]]
+    frequentItemSets: Seq[FrequentItemSet[ItemType]]
   )(implicit ord: Ordering[FrequentItemSet[ItemType]]): Seq[FrequentItemSet[ItemType]] =
     frequentItemSets.map(_.toOrdered).sorted
 
@@ -46,7 +46,7 @@ object FrequentItemSetUtils {
     val source =
       if (compressed) Source.fromInputStream(new GZIPInputStream(new FileInputStream(file))) else Source.fromFile(file)
     for (line <- source.getLines) {
-      val itemsAndFrequency  = line.split(' ')
+      val itemsAndFrequency = line.split(' ')
       val (items, frequency) = itemsAndFrequency.splitAt(itemsAndFrequency.length - 1)
       buffer += FrequentItemSet.empty[String].addItems(items, frequency(0).drop(1).dropRight(1).toInt)
     }

@@ -18,7 +18,7 @@ package ptoth.fim.FPMax
 
 import org.scalatest.FunSuite
 import ptoth.fim.fpgrowth.FPMax
-import ptoth.fim.{ FrequentItemSet }
+import ptoth.fim.{FrequentItemSet}
 import ptoth.fim.FrequentItemSetUtils._
 import org.scalatest.Inspectors._
 
@@ -111,38 +111,44 @@ class FPMaxTest extends FunSuite {
 
   test("Mining of a {{A, B, C}, {A, B}, {A, D}, {A, D}, {C, E}, {C, E}") {
     val frequentItemSets =
-      FPMax(Array(Array("A", "B", "C"),
-                  Array("A", "B"),
-                  Array("A", "D"),
-                  Array("A", "D"),
-                  Array("C", "E"),
-                  Array("C", "E")),
-            1).mine()
+      FPMax(
+        Array(
+          Array("A", "B", "C"),
+          Array("A", "B"),
+          Array("A", "D"),
+          Array("A", "D"),
+          Array("C", "E"),
+          Array("C", "E")
+        ),
+        1
+      ).mine()
 
     assert(
       ordered(frequentItemSets.items) === ordered(
-        List(FrequentItemSet(Array("A", "B", "C"), 1),
-             FrequentItemSet(Array("A", "D"), 2),
-             FrequentItemSet(Array("C", "E"), 2))
+        List(
+          FrequentItemSet(Array("A", "B", "C"), 1),
+          FrequentItemSet(Array("A", "D"), 2),
+          FrequentItemSet(Array("C", "E"), 2)
+        )
       )
     )
   }
 
   test("Mining of T10I4D100K database") {
     forAll(List(5000, 1000, 500, 100)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T10I4D100K.dat.gz")
+      val itemset = readItemSetFile("data/input/T10I4D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T10I4D100K_fpm_mf-$mf.dat.gz")
-      val frequentItemSets         = FPMax(itemset, mf).mine()
+      val frequentItemSets = FPMax(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }
   }
 
   test("Mining of T40I10D100K database") {
-    forAll(List(5000, 1000, 500)) { mf =>
-      val itemset                  = readItemSetFile("data/input/T40I10D100K.dat.gz")
+    forAll(List(5000, 1000)) { mf =>
+      val itemset = readItemSetFile("data/input/T40I10D100K.dat.gz")
       val expectedFrequentItemsets = readFrequentItemSetFile(s"data/output/T40I10D100K_fpm_mf-$mf.dat.gz")
-      val frequentItemSets         = FPMax(itemset, mf).mine()
+      val frequentItemSets = FPMax(itemset, mf).mine()
 
       assert(ordered(frequentItemSets.items) === ordered(expectedFrequentItemsets))
     }

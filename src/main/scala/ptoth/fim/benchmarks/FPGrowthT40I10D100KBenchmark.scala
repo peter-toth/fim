@@ -17,7 +17,7 @@
 package ptoth.fim.benchmarks
 
 import org.openjdk.jmh.annotations._
-import ptoth.fim.{ FrequentItemSetAccumulator, FrequentItemSetUtils }
+import ptoth.fim.{FrequentItemSetAccumulator, FrequentItemSetUtils}
 
 @State(Scope.Benchmark)
 class FPGrowthT40I10D100KBenchmark {

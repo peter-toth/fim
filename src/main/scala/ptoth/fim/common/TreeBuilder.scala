@@ -25,17 +25,19 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
 
   lazy val children: mutable.Map[Int, BuilderNode[NodeType]] = mutable.Map.empty
 
-  def add(itemIdSet: Array[Int],
-          itemIdIndex: Int,
-          headers: Array[_ <: Header[NodeType]],
-          data: NodeType#DataType,
-          nodeCreator: (Int, NodeType) => NodeType): (Int, Boolean) =
+  def add(
+    itemIdSet: Array[Int],
+    itemIdIndex: Int,
+    headers: Array[_ <: Header[NodeType]],
+    data: NodeType#DataType,
+    nodeCreator: (Int, NodeType) => NodeType
+  ): (Int, Boolean) =
     if (itemIdIndex == itemIdSet.length) {
       (0, false)
     } else {
-      val itemId        = itemIdSet(itemIdIndex)
+      val itemId = itemIdSet(itemIdIndex)
       var sizeIncrement = 0
-      var split         = false
+      var split = false
       val child = children.getOrElseUpdate(
         itemId, {
           val node = nodeCreator(itemId, this.node)
@@ -56,10 +58,11 @@ class BuilderNode[NodeType >: Null <: Node[NodeType]](val node: NodeType = null)
 }
 
 class TreeBuilder[ItemType, NodeType >: Null <: Node[NodeType], HeaderType <: Header[NodeType]: ClassTag](
-    val itemEncoder: ItemEncoder[ItemType],
-    headerCreator: (Int, ItemType, Int) => HeaderType,
-    nodeCreator: (Int, NodeType) => NodeType
+  val itemEncoder: ItemEncoder[ItemType],
+  headerCreator: (Int, ItemType, Int) => HeaderType,
+  nodeCreator: (Int, NodeType) => NodeType
 ) {
+
   val tree = new Tree[HeaderType](itemEncoder.itemFrequencies.zipWithIndex.map {
     case ((item, frequency), itemId) => headerCreator(itemId, item, frequency)
   })
